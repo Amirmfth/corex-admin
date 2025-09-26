@@ -16,6 +16,7 @@ const isRTL = (locale: AppLocale) => locale === 'fa' || locale === 'en';
 const NAV_BASE = [
   { key: 'dashboard', href: '/' },
   { key: 'items', href: '/items' },
+  { key: 'categories', href: '/categories' },
   { key: 'products', href: '/products' },
   { key: 'purchases', href: '/purchases' },
   { key: 'sales', href: '/sales' },

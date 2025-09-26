@@ -2,6 +2,7 @@
   "navigation": {
     "dashboard": "Dashboard",
     "items": "Items",
+    "categories": "Categories",
     "products": "Products",
     "sales": "Sales",
     "reports": "Reports",
@@ -63,6 +64,45 @@
     "clearSelection": "Clear selection",
     "noProducts": "No products matched. Add a product to continue.",
     "searchPlaceholder": "Search product, model or serial"
+  },
+  "categories": {
+    "title": "Category manager",
+    "subtitle": "Organize the catalog with nested categories.",
+    "empty": "No categories yet. Create your first category to begin.",
+    "pathLabel": "Path",
+    "actions": {
+      "addRoot": "Add category",
+      "addChild": "Add subcategory",
+      "rename": "Rename",
+      "move": "Move",
+      "delete": "Delete"
+    },
+    "form": {
+      "nameLabel": "Name",
+      "namePlaceholder": "Category name",
+      "nameRequired": "Enter a name",
+      "parentLabel": "Parent category",
+      "rootOption": "No parent (top level)",
+      "createTitle": "Create category",
+      "renameTitle": "Rename category",
+      "moveTitle": "Move category",
+      "moveDescription": "Choose a new parent for this category.",
+      "createSuccess": "Category created",
+      "createError": "Could not create the category",
+      "renameSuccess": "Category renamed",
+      "renameError": "Could not rename the category",
+      "moveSuccess": "Category moved",
+      "moveError": "Could not move the category",
+      "deleteSuccess": "Category deleted",
+      "deleteError": "Could not delete the category"
+    },
+    "delete": {
+      "title": "Delete category",
+      "description": "Deleting a category cannot be undone.",
+      "confirm": "Delete",
+      "disabledChildren": "Remove subcategories before deleting this category.",
+      "disabledProducts": "{count, plural, one {Remove the product assigned to this category first.} other {Remove the # products assigned to this category first.}}"
+    }
   },
   "filters": {
     "title": "Filters",

@@ -12,6 +12,7 @@ import {
   Receipt,
   BarChart3,
   Settings2,
+  FolderTree,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -54,6 +55,7 @@ interface MobileNavProps {
 const ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
   dashboard: LayoutDashboard,
   items: Boxes,
+  categories: FolderTree,
   products: PackagePlus,
   purchases: ClipboardList,
   sales: Receipt,
