@@ -10,7 +10,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     const product = await prisma.product.findUnique({
       where: { id: params.id },
       include: {
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, path: true } },
         _count: { select: { items: true } },
       },
     });
@@ -23,7 +23,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       where: { productId: params.id, soldAt: { not: null } },
       select: { id: true, soldAt: true, soldPriceToman: true },
       orderBy: { soldAt: "desc" },
-      take: 10,
+      take: 25,
     });
 
     return NextResponse.json({ ...product, soldItems });
@@ -70,7 +70,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       where: { id: params.id },
       data,
       include: {
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, path: true } },
         _count: { select: { items: true } },
       },
     });

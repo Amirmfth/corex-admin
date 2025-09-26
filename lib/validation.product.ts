@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const nonEmptyString = z.string().trim().min(1, "Required");
-const optionalNonEmptyString = nonEmptyString.optional();
+const optionalNonEmptyString = nonEmptyString.optional().or(z.literal(null));
 const imageUrlsSchema = z
   .array(z.string().trim().url({ message: "Image URL must be a valid URL" }))
   .optional();

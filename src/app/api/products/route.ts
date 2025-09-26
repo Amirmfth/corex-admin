@@ -63,7 +63,7 @@ export async function GET(request: Request) {
       prisma.product.findMany({
         where,
         include: {
-          category: { select: { id: true, name: true, slug: true } },
+          category: { select: { id: true, name: true, slug: true, path: true } },
           _count: { select: { items: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         imageUrls: payload.imageUrls ?? [],
       },
       include: {
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, path: true } },
         _count: { select: { items: true } },
       },
     });
