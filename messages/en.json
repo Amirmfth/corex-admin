@@ -147,7 +147,12 @@
     "cancel": "Cancel",
     "clearSelection": "Clear selection",
     "noProducts": "No products matched. Add a product to continue.",
-    "searchPlaceholder": "Search product, model or serial"
+    "searchPlaceholder": "Search product, model or serial",
+    "createProduct": {
+      "trigger": "New product",
+      "title": "Create product",
+      "subtitle": "Add a product without leaving this form."
+    }
   },
   "categories": {
     "title": "Category manager",
@@ -225,7 +230,8 @@
     "details": "Item details",
     "saleChannel": "Sale channel",
     "soldPrice": "Sold price",
-    "acquired": "Acquired"
+    "acquired": "Acquired",
+    "openProduct": "Open product"
   },
   "saleNew": {
     "title": "New sale",

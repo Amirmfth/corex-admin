@@ -93,6 +93,13 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                   {item.product.category ? (
                     <p className="text-xs text-[var(--muted)]">{item.product.category.name}</p>
                   ) : null}
+
+                  <Link
+                    href={`/${typedLocale}/products/${item.product.id}`}
+                    className="mt-3 inline-flex items-center text-xs font-medium text-[var(--accent)] transition hover:text-[var(--accent-hover)]"
+                  >
+                    {t('openProduct')}
+                  </Link>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
