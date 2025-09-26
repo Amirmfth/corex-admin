@@ -3,3 +3,7 @@ export * from "./validation";
 export * from "./money";
 export * from "./date";
 export * from "./calc";
+export * from "./slug";
+export * from "./category-path";
+export * from "./validation.product";
+export * from "./validation.category";
