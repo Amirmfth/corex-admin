@@ -47,6 +47,9 @@ model Category {
   products  Product[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  @@index([parentId, sortOrder])
+  @@index([slug])
 }
 
 model Product {
