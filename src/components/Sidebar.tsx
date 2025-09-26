@@ -11,6 +11,7 @@ import {
   Settings2,
   ChevronLeft,
   ChevronRight,
+  FolderTree,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -42,6 +43,7 @@ interface SidebarProps {
 const ICONS = {
   dashboard: LayoutDashboard,
   items: Boxes,
+  categories: FolderTree,
   products: PackagePlus,
   purchases: ClipboardList,
   sales: Receipt,

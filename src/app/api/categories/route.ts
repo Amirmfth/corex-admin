@@ -21,6 +21,7 @@ interface CategoryNode {
   sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
+  productCount: number;
   children: CategoryNode[];
 }
 
@@ -41,13 +42,28 @@ function sortNodes(nodes: CategoryNode[]): CategoryNode[] {
 
 export async function GET() {
   try {
-    const categories = await prisma.category.findMany();
+    const [categories, productCounts] = await Promise.all([
+      prisma.category.findMany(),
+      prisma.product.groupBy({
+        by: ["categoryId"],
+        _count: true,
+      }),
+    ]);
+
+    const productsByCategory = new Map<string, number>();
+
+    for (const entry of productCounts) {
+      if (entry.categoryId) {
+        productsByCategory.set(entry.categoryId, entry._count);
+      }
+    }
 
     const childrenByParent = new Map<string | null, CategoryNode[]>();
 
     for (const category of categories) {
       const node: CategoryNode = {
         ...category,
+        productCount: productsByCategory.get(category.id) ?? 0,
         children: [],
       };
 
