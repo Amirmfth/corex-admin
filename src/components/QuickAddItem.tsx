@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import { Drawer } from 'vaul';
 
+import CategorySelect from './common/CategorySelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 // import "vaul/dist/index.css";
 type ProductOption = {
@@ -40,6 +41,18 @@ type TextFieldKey = (typeof TEXT_FIELD_KEYS)[number];
 function isTextFieldKey(value: string): value is TextFieldKey {
   return TEXT_FIELD_KEYS.includes(value as TextFieldKey);
 }
+type NewProductFormState = {
+  name: string;
+  brand: string;
+  model: string;
+  categoryId: string | null;
+};
+const NEW_PRODUCT_INITIAL: NewProductFormState = {
+  name: '',
+  brand: '',
+  model: '',
+  categoryId: null,
+};
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -56,6 +69,8 @@ export default function QuickAddItem() {
   const t = useTranslations('quickAdd');
   const tStatuses = useTranslations('statuses');
   const tConditions = useTranslations('conditions');
+  const tCreateProduct = useTranslations('quickAdd.createProduct');
+  const tProductForm = useTranslations('products.form');
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -66,6 +81,10 @@ export default function QuickAddItem() {
   const [selectedProduct, setSelectedProduct] = useState<ProductOption | null>(null);
   const [isProductMenuOpen, setIsProductMenuOpen] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
+  const [newProductForm, setNewProductForm] = useState<NewProductFormState>(NEW_PRODUCT_INITIAL);
+  const [newProductError, setNewProductError] = useState<string | null>(null);
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const menuCloseTimeoutRef = useRef<number | null>(null);
   function updateForm<K extends keyof FormState>(key: K, value: FormState[K]) {
 
@@ -88,6 +107,7 @@ export default function QuickAddItem() {
       setSelectedProduct(null);
       setIsProductMenuOpen(true);
       clearMenuCloseTimeout();
+      setIsProductSheetOpen(false);
     }
   }, [open]);
 
@@ -129,6 +149,75 @@ export default function QuickAddItem() {
     setProductOptions([]);
     clearMenuCloseTimeout();
     setIsProductMenuOpen(false);
+  }
+  useEffect(() => {
+    if (!isProductSheetOpen) {
+      setNewProductForm(NEW_PRODUCT_INITIAL);
+      setNewProductError(null);
+      setIsCreatingProduct(false);
+    }
+  }, [isProductSheetOpen]);
+  function updateNewProductForm<K extends keyof NewProductFormState>(
+    key: K,
+    value: NewProductFormState[K],
+  ) {
+    setNewProductForm((prev) => ({ ...prev, [key]: value }));
+  }
+  async function handleCreateProduct(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedName = newProductForm.name.trim();
+    if (!trimmedName) {
+      setNewProductError(tProductForm('nameRequired'));
+      return;
+    }
+    setNewProductError(null);
+    setIsCreatingProduct(true);
+    const payload = {
+      name: trimmedName,
+      brand: newProductForm.brand.trim() ? newProductForm.brand.trim() : null,
+      model: newProductForm.model.trim() ? newProductForm.model.trim() : null,
+      categoryId: newProductForm.categoryId ?? null,
+    };
+    try {
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        const message = data?.message ?? tProductForm('submitError');
+        setNewProductError(message);
+        toast.error(message);
+        return;
+      }
+      const product = (await response.json()) as {
+        id: string;
+        name: string;
+        brand: string | null;
+        model: string | null;
+        imageUrls?: string[];
+      };
+      const option: ProductOption = {
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        model: product.model,
+        image: product.imageUrls?.[0] ?? null,
+      };
+      handleProductSelect(option);
+      toast.success(tProductForm('createSuccess'));
+      setIsProductSheetOpen(false);
+    } catch (error) {
+      console.error(error);
+      const message = tProductForm('submitError');
+      setNewProductError(message);
+      toast.error(message);
+    } finally {
+      setIsCreatingProduct(false);
+    }
   }
   useEffect(() => {
     if (!open || !isProductMenuOpen) {
@@ -224,12 +313,120 @@ export default function QuickAddItem() {
   const formContent = (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="space-y-2">
-        <label
-          className="mb-1 block text-sm font-medium text-[var(--muted-strong)]"
-          htmlFor="product-search"
-        >
-          {t('productId')}
-        </label>
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <label
+            className="block text-sm font-medium text-[var(--muted-strong)]"
+            htmlFor="product-search"
+          >
+            {t('productId')}
+          </label>
+          <Drawer.Root open={isProductSheetOpen} onOpenChange={setIsProductSheetOpen}>
+            <Drawer.Trigger asChild>
+              <button
+                type="button"
+                className="text-xs font-semibold text-[var(--accent)] transition hover:text-[var(--accent-hover)]"
+              >
+                + {tCreateProduct('trigger')}
+              </button>
+            </Drawer.Trigger>
+            <Drawer.Portal>
+              <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+              <Drawer.Content className="fixed inset-x-0 bottom-0 z-[60] max-h-[95vh] overflow-y-auto rounded-t-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg sm:inset-auto sm:left-1/2 sm:top-1/2 sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl">
+                <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300 sm:hidden" />
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                      {tCreateProduct('title')}
+                    </h2>
+                    <p className="text-sm text-[var(--muted)]">
+                      {tCreateProduct('subtitle')}
+                    </p>
+                  </div>
+                  <form onSubmit={handleCreateProduct} className="space-y-4">
+                    {newProductError ? (
+                      <div className="rounded-xl border border-[var(--destructive)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--destructive)]">
+                        {newProductError}
+                      </div>
+                    ) : null}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="flex flex-col gap-2 sm:col-span-2">
+                        <label htmlFor="new-product-name" className="text-sm font-medium text-[var(--foreground)]">
+                          {tProductForm('nameLabel')}
+                        </label>
+                        <input
+                          id="new-product-name"
+                          value={newProductForm.name}
+                          onChange={(event) => updateNewProductForm('name', event.target.value)}
+                          placeholder={tProductForm('namePlaceholder')}
+                          className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+                          required
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="new-product-brand" className="text-sm font-medium text-[var(--foreground)]">
+                          {tProductForm('brandLabel')}
+                        </label>
+                        <input
+                          id="new-product-brand"
+                          value={newProductForm.brand}
+                          onChange={(event) => updateNewProductForm('brand', event.target.value)}
+                          placeholder={tProductForm('brandPlaceholder')}
+                          className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="new-product-model" className="text-sm font-medium text-[var(--foreground)]">
+                          {tProductForm('modelLabel')}
+                        </label>
+                        <input
+                          id="new-product-model"
+                          value={newProductForm.model}
+                          onChange={(event) => updateNewProductForm('model', event.target.value)}
+                          placeholder={tProductForm('modelPlaceholder')}
+                          className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <CategorySelect
+                      id="new-product-category"
+                      label={tProductForm('categoryLabel')}
+                      value={newProductForm.categoryId}
+                      onChange={(value) => updateNewProductForm('categoryId', value)}
+                      placeholder={tProductForm('categoryPlaceholder')}
+                      noneLabel={tProductForm('categoryNone')}
+                      helperText={tProductForm('categoryHelper')}
+                      error={null}
+                      loadingLabel={tProductForm('categoryLoading')}
+                      retryLabel={tProductForm('categoryRetry')}
+                    />
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsProductSheetOpen(false)}
+                        className="rounded-full border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)]"
+                        disabled={isCreatingProduct}
+                      >
+                        {t('cancel')}
+                      </button>
+                      <button
+                        type="submit"
+                        className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-65"
+                        disabled={isCreatingProduct}
+                      >
+                        {isCreatingProduct ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : null}
+                        <span>
+                          {isCreatingProduct ? tProductForm('submitting') : tProductForm('submitCreate')}
+                        </span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </Drawer.Content>
+            </Drawer.Portal>
+          </Drawer.Root>
+        </div>
         <div className="relative">
           <Search
             className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--muted)]"

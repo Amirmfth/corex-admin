@@ -148,7 +148,12 @@
     "cancel": "انصراف",
     "clearSelection": "پاک کردن انتخاب",
     "noProducts": "هیچ محصولی یافت نشد. ابتدا یک محصول اضافه کنید.",
-    "searchPlaceholder": "جستجوی محصول، مدل یا سریال"
+    "searchPlaceholder": "جستجوی محصول، مدل یا سریال",
+    "createProduct": {
+      "trigger": "محصول جدید",
+      "title": "ایجاد محصول",
+      "subtitle": "بدون ترک این فرم یک محصول بسازید."
+    }
   },
   "categories": {
     "title": "مدیریت دسته‌بندی‌ها",
@@ -226,7 +231,8 @@
     "details": "جزئیات کالا",
     "saleChannel": "کانال فروش",
     "soldPrice": "قیمت فروش",
-    "acquired": "تاریخ دریافت"
+    "acquired": "تاریخ دریافت",
+    "openProduct": "مشاهده محصول"
   },
   "saleNew": {
     "title": "ثبت فروش جدید",

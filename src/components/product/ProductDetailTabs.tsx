@@ -78,6 +78,7 @@ export default function ProductDetailTabs({ product, items, soldItems, locale }:
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
             {items.map((item) => {
+              const itemHref = `/${locale}/items/${item.id}`;
               const costValue = totalCost({
                 purchaseToman: item.purchaseToman,
                 feesToman: item.feesToman,
@@ -85,29 +86,47 @@ export default function ProductDetailTabs({ product, items, soldItems, locale }:
               });
               return (
                 <tr key={item.id} className="hover:bg-[var(--surface-muted)]">
-                  <td className="px-4 py-3 text-[var(--foreground)]">{item.serial}</td>
-                  <td className="px-4 py-3 text-[var(--foreground)]">{tConditions(item.condition)}</td>
-                  <td className="px-4 py-3 text-[var(--foreground)]">{tStatuses(item.status)}</td>
                   <td className="px-4 py-3 text-[var(--foreground)]">
-                    <Toman value={costValue} locale={intlLocale} />
+                    <Link href={itemHref} className="block w-full">
+                      {item.serial}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-[var(--foreground)]">
-                    {item.listedPriceToman != null ? (
-                      <Toman value={item.listedPriceToman} locale={intlLocale} />
-                    ) : (
-                      <span className="text-xs text-[var(--muted)]">{tDetail("notListed")}</span>
-                    )}
+                    <Link href={itemHref} className="block w-full">
+                      {tConditions(item.condition)}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-[var(--foreground)]">
-                    {item.soldPriceToman != null ? (
-                      <Toman value={item.soldPriceToman} locale={intlLocale} />
-                    ) : (
-                      <span className="text-xs text-[var(--muted)]">{tDetail("notSold")}</span>
-                    )}
+                    <Link href={itemHref} className="block w-full">
+                      {tStatuses(item.status)}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-[var(--foreground)]">
+                    <Link href={itemHref} className="block w-full">
+                      <Toman value={costValue} locale={intlLocale} />
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-[var(--foreground)]">
+                    <Link href={itemHref} className="block w-full">
+                      {item.listedPriceToman != null ? (
+                        <Toman value={item.listedPriceToman} locale={intlLocale} />
+                      ) : (
+                        <span className="text-xs text-[var(--muted)]">{tDetail("notListed")}</span>
+                      )}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-[var(--foreground)]">
+                    <Link href={itemHref} className="block w-full">
+                      {item.soldPriceToman != null ? (
+                        <Toman value={item.soldPriceToman} locale={intlLocale} />
+                      ) : (
+                        <span className="text-xs text-[var(--muted)]">{tDetail("notSold")}</span>
+                      )}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/${locale}/items/${item.id}`}
+                      href={itemHref}
                       className="inline-flex items-center gap-2 text-xs font-medium text-[var(--accent)] transition hover:text-[var(--accent-hover)]"
                     >
                       {tDetail("viewItem")}
