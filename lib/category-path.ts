@@ -1,8 +1,12 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
+
+type CategoryDelegate =
+  | Pick<PrismaClient, "category">
+  | Pick<Prisma.TransactionClient, "category">;
 
 export async function buildCategoryPath(
   nodeId: string,
-  prisma: Pick<PrismaClient, "category">
+  prisma: CategoryDelegate
 ): Promise<string> {
   const segments: string[] = [];
   let currentId: string | null = nodeId;
@@ -22,4 +26,30 @@ export async function buildCategoryPath(
   }
 
   return segments.reverse().join("/");
+}
+
+export async function rebuildCategorySubtreePaths(
+  nodeId: string,
+  prisma: CategoryDelegate
+): Promise<void> {
+  const queue: string[] = [nodeId];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    const path = await buildCategoryPath(currentId, prisma);
+
+    await prisma.category.update({
+      where: { id: currentId },
+      data: { path },
+    });
+
+    const children = await prisma.category.findMany({
+      where: { parentId: currentId },
+      select: { id: true },
+    });
+
+    for (const child of children) {
+      queue.push(child.id);
+    }
+  }
 }
