@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 
-import { searchProducts } from '../../../../../lib/products';
+import { searchProducts } from "../../../../../lib/products";
 
+const MAX_RESULTS = 10;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('query') ?? searchParams.get('search') ?? undefined;
-  const takeParam = searchParams.get('take');
-  const take = takeParam ? Number.parseInt(takeParam, 10) : 10;
+  const query = searchParams.get("q")?.trim();
 
-  if (Number.isNaN(take) || take <= 0) {
-    return NextResponse.json({ message: 'Invalid take parameter' }, { status: 400 });
+  if (!query) {
+    return NextResponse.json({ items: [] });
   }
 
-  const products = await searchProducts({ query: query?.trim() || undefined, take: Math.min(take, 25) });
+  const items = await searchProducts({ query, take: MAX_RESULTS });
 
-  return NextResponse.json({ products });
+  return NextResponse.json({ items });
 }
