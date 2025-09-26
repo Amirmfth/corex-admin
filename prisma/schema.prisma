@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// enums
+enum ItemCondition {
+  NEW
+  USED
+  FOR_PARTS
+}
+
+enum ItemStatus {
+  IN_STOCK
+  REPAIR
+  LISTED
+  RESERVED
+  SOLD
+}
+
+enum Channel {
+  DIRECT
+  ONLINE
+  WHOLESALE
+  OTHER
+}
+
+enum MovementType {
+  PURCHASE_IN
+  SALE_OUT
+  ADJUSTMENT
+  REPAIR_CONSUME
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  parentId  String?
+  parent    Category?  @relation("CatTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CatTree")
+  sortOrder Int        @default(0)
+  products  Product[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Product {
+  id             String         @id @default(cuid())
+  name           String
+  brand          String?
+  model          String?
+  categoryId     String?
+  category       Category?      @relation(fields: [categoryId], references: [id])
+  specsJson      Json?
+  imageUrls      String[]       @default([])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  items          Item[]
+  purchaseLines  PurchaseLine[] @relation("ProductPurchaseLines")
+  saleLines      SaleLine[]     @relation("ProductSaleLines")
+}
+
+model Item {
+  id               String             @id @default(cuid())
+  productId        String
+  product          Product            @relation(fields: [productId], references: [id])
+
+  serial           String             @unique
+  condition        ItemCondition      @default(USED)
+  status           ItemStatus         @default(IN_STOCK)
+
+  acquiredAt       DateTime           @default(now())
+  purchaseToman    Int
+  feesToman        Int                @default(0)
+  refurbToman      Int                @default(0)
+
+  location         String?
+
+  listedChannel    Channel?
+  listedPriceToman Int?
+  listedAt         DateTime?
+
+  soldAt           DateTime?
+  soldPriceToman   Int?
+  saleChannel      Channel?
+  buyerName        String?
+
+  notes            String?
+  images           String[]            @default([])
+
+  movements        InventoryMovement[]
+  saleLines        SaleLine[]          @relation("ItemSaleLines")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model Purchase {
+  id           String   @id @default(cuid())
+  supplierName String
+  channel      Channel?
+  reference    String?
+  orderedAt    DateTime @default(now())
+  totalToman   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lines        PurchaseLine[]
+}
+
+model PurchaseLine {
+  id             String    @id @default(cuid())
+  purchaseId     String
+  purchase       Purchase  @relation(fields: [purchaseId], references: [id])
+  productId      String
+  product        Product   @relation("ProductPurchaseLines", fields: [productId], references: [id])
+  quantity       Int       @default(1)
+  unitToman      Int
+  feesToman      Int       @default(0)
+  createdItemIds String[]  @default([])
+}
+
+model Sale {
+  id           String   @id @default(cuid())
+  customerName String
+  channel      Channel  @default(DIRECT)
+  reference    String?
+  orderedAt    DateTime @default(now())
+  totalToman   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lines        SaleLine[]
+}
+
+model SaleLine {
+  id         String  @id @default(cuid())
+  saleId     String
+  sale       Sale    @relation(fields: [saleId], references: [id])
+  productId  String
+  product    Product @relation("ProductSaleLines", fields: [productId], references: [id])
+  itemId     String?
+  item       Item?   @relation("ItemSaleLines", fields: [itemId], references: [id])
+  unitToman  Int
+}
+
+model InventoryMovement {
+  id         String       @id @default(cuid())
+  itemId     String
+  item       Item         @relation(fields: [itemId], references: [id])
+  movement   MovementType
+  qty        Int          @default(1)
+  reference  String?
+  notes      String?
+  createdAt  DateTime     @default(now())
+}

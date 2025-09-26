@@ -1,0 +1,132 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: light;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --background: #f6f0ff;
+  --foreground: #231239;
+  --muted: #5f4b87;
+  --muted-strong: #39245f;
+  --surface: #fdfbff;
+  --surface-muted: #f5ebff;
+  --surface-hover: #efe2ff;
+  --border: rgba(124, 58, 237, 0.28);
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-foreground: #f8f5ff;
+  --shadow-color: rgba(124, 58, 237, 0.18);
+
+  --neutral-50: #f7f2ff;
+  --neutral-100: #ede5ff;
+  --neutral-200: #d9ccff;
+  --neutral-300: #c4b5fd;
+  --neutral-400: #a78bfa;
+  --neutral-500: #9674f0;
+  --neutral-600: #8455e3;
+  --neutral-700: #6d3fd4;
+  --neutral-800: #542fb0;
+  --neutral-900: #3b1d82;
+  --neutral-950: #1f0a49;
+  --white: #fefbff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #090214;
+    --foreground: #f4edff;
+    --muted: #c9bef9;
+    --muted-strong: #f0eaff;
+    --surface: #16092e;
+    --surface-muted: #1f103e;
+    --surface-hover: #26144b;
+    --border: rgba(168, 85, 247, 0.35);
+    --accent: #a855f7;
+    --accent-hover: #9333ea;
+    --accent-foreground: #fdf4ff;
+    --shadow-color: rgba(168, 85, 247, 0.24);
+
+    --neutral-50: #130e23;
+    --neutral-100: #191230;
+    --neutral-200: #23183f;
+    --neutral-300: #2c1f4d;
+    --neutral-400: #37265f;
+    --neutral-500: #4a3580;
+    --neutral-600: #5f3ea5;
+    --neutral-700: #7f50cf;
+    --neutral-800: #9e6cf1;
+    --neutral-900: #4a2d99;
+    --neutral-950: #160b2f;
+    --white: #1c1233;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-white: var(--white);
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
+  --color-neutral-900: var(--neutral-900);
+  --color-neutral-950: var(--neutral-950);
+  --color-slate-50: var(--neutral-50);
+  --color-slate-100: var(--neutral-100);
+  --color-slate-200: var(--neutral-200);
+  --color-slate-300: var(--neutral-300);
+  --color-slate-400: var(--neutral-400);
+  --color-slate-500: var(--neutral-500);
+  --color-slate-600: var(--neutral-600);
+  --color-slate-700: var(--neutral-700);
+  --color-slate-800: var(--neutral-800);
+  --color-slate-900: var(--neutral-900);
+  --color-purple-500: var(--accent);
+  --color-purple-600: var(--accent-hover);
+  --color-primary-500: var(--accent);
+  --color-primary-600: var(--accent-hover);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 45%),
+    radial-gradient(circle at bottom right, rgba(192, 132, 252, 0.18), transparent 55%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image:
+      radial-gradient(circle at top left, rgba(168, 85, 247, 0.25), transparent 40%),
+      radial-gradient(circle at bottom right, rgba(88, 28, 135, 0.45), transparent 60%);
+  }
+}
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
