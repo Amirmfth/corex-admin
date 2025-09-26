@@ -17,6 +17,7 @@ import { Toaster } from 'sonner';
 import { Link, routing, AppLocale } from '../../../i18n/routing';
 import LocaleSwitcher from '../../components/LocaleSwitcher';
 import QuickAddItem from '../../components/QuickAddItem';
+import MobileNav from '../../components/layout/MobileNav';
 
 export const runtime = 'nodejs';
 
@@ -58,7 +59,17 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     { key: 'settings', href: '/settings', icon: Settings2 },
   ];
 
+  const navLinks = navItems.map(({ key, ...item }) => ({
+    ...item,
+    key,
+    label: tNav(key),
+  }));
+
   const dir = normalizedLocale === 'fa' ? 'rtl' : 'ltr';
+  const brandLabel = 'Corex Admin';
+  const mobileBrandLabel = normalizedLocale === 'fa' ? 'کورکس' : 'Corex';
+  const menuLabel = normalizedLocale === 'fa' ? 'منو' : 'Menu';
+  const closeLabel = normalizedLocale === 'fa' ? 'بستن منو' : 'Close menu';
 
   return (
     <NextIntlClientProvider locale={normalizedLocale} messages={messages}>
@@ -66,11 +77,11 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <aside className="hidden w-64 flex-col border-e border-[var(--border)] bg-[var(--surface)]/90 shadow-[0_10px_40px_var(--shadow-color)] backdrop-blur lg:flex lg:sticky lg:top-0 lg:h-svh">
           <div className="flex items-center gap-2 px-6 pt-10 pb-8 text-xl font-semibold tracking-tight text-[var(--accent)]">
             <BadgeCheck className="size-5" aria-hidden />
-            <span>Corex Admin</span>
+            <span>{brandLabel}</span>
           </div>
           <nav aria-label="Main" className="flex-1 px-4">
             <ul className="flex flex-col gap-1 text-sm font-medium text-[var(--muted)]">
-              {navItems.map(({ key, href, icon: Icon }) => (
+              {navLinks.map(({ key, label, href, icon: Icon }) => (
                 <li key={key}>
                   <Link
                     href={href}
@@ -81,7 +92,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
                       className="size-4 text-[var(--muted-strong)] transition group-hover:text-[var(--accent)]"
                       aria-hidden
                     />
-                    <span>{tNav(key)}</span>
+                    <span>{label}</span>
                   </Link>
                 </li>
               ))}
@@ -99,27 +110,16 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div className="flex items-center gap-3">
                 <div className="rounded-full bg-[var(--accent)] px-3 py-1 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_10px_30px_var(--shadow-color)] lg:hidden">
-                  Corex
+                  {mobileBrandLabel}
                 </div>
-                <nav aria-label="Mobile" className="lg:hidden">
-                  <ul className="flex items-center gap-3 overflow-x-auto whitespace-nowrap text-sm font-medium text-[var(--muted)] [-mx-2] px-2 py-1">
-                    {navItems.map(({ key, href, icon: Icon }) => (
-                      <li key={key}>
-                        <Link
-                          href={href}
-                          locale={normalizedLocale}
-                          className="group flex items-center gap-2 rounded-full px-3 py-1 transition hover:bg-[var(--surface-hover)] hover:text-[var(--accent)]"
-                        >
-                          <Icon
-                            className="size-4 text-[var(--muted-strong)] transition group-hover:text-[var(--accent)]"
-                            aria-hidden
-                          />
-                          <span>{tNav(key)}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
+                <MobileNav
+                  items={navLinks}
+                  locale={normalizedLocale}
+                  dir={dir}
+                  brandLabel={brandLabel}
+                  menuLabel={menuLabel}
+                  closeLabel={closeLabel}
+                />
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-3">
