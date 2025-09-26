@@ -1,4 +1,4 @@
-import { ItemCondition, ItemStatus, type Prisma } from '@prisma/client';
+import { ItemCondition, ItemStatus, Prisma } from '@prisma/client';
 
 import { prisma } from './prisma';
 
@@ -82,9 +82,9 @@ export type ProductDetailResult = {
 export async function searchProducts({ query, take = 10 }: SearchProductsArgs = {}) {
   const filters = query
     ? [
-        { name: { contains: query, mode: 'insensitive' } },
-        { brand: { contains: query, mode: 'insensitive' } },
-        { model: { contains: query, mode: 'insensitive' } },
+        { name: { contains: query, mode: Prisma.QueryMode.insensitive } },
+        { brand: { contains: query, mode: Prisma.QueryMode.insensitive } },
+        { model: { contains: query, mode: Prisma.QueryMode.insensitive } },
       ]
     : undefined;
 

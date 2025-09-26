@@ -6,13 +6,13 @@ const MAX_RESULTS = 10;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q")?.trim();
+  const query = searchParams.get("query")?.trim();
 
   if (!query) {
-    return NextResponse.json({ items: [] });
+    return NextResponse.json({ products: [] });
   }
 
-  const items = await searchProducts({ query, take: MAX_RESULTS });
+  const products = await searchProducts({ query, take: MAX_RESULTS });
 
-  return NextResponse.json({ items });
+  return NextResponse.json({ products });
 }
