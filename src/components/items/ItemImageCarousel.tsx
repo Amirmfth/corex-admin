@@ -1,8 +1,8 @@
 ﻿'use client';
 
+import { ImageOff } from 'lucide-react';
 import { useState } from 'react';
 
-import { ImageOff } from 'lucide-react';
 
 type ItemImageCarouselProps = {
   images: string[];

@@ -1,13 +1,13 @@
 ﻿'use client';
 
 import { ItemStatus } from '@prisma/client';
+import { ImageOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-import { ImageOff } from 'lucide-react';
 
 import type { AppLocale } from '../../../i18n/routing';
 import { totalCost } from '../../../lib/calc';
@@ -36,6 +36,7 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
   const tTable = useTranslations('table');
   const tButtons = useTranslations('buttons');
   const tBulk = useTranslations('bulk');
+  const tConditions = useTranslations('conditions');
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const allSelected = selected.length > 0 && selected.length === items.length;
@@ -226,7 +227,9 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-[var(--muted-strong)]">{item.serial}</td>
-                  <td className="px-4 py-3 text-[var(--muted-strong)]">{item.condition}</td>
+                  <td className="px-4 py-3 text-[var(--muted-strong)]">
+                    {tConditions(item.condition)}
+                  </td>
                   <td className="px-4 py-3 text-[var(--muted-strong)]">
                     <Toman value={costValue} locale={locale === 'fa' ? 'fa-IR' : 'en-US'} />
                   </td>

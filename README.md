@@ -1,6 +1,6 @@
-# Corex Admin
+# CoreX Admin
 
-Corex Admin is a Next.js dashboard for managing inventory, sales, and reports across multiple locales.
+CoreX Admin is a Next.js dashboard for managing inventory, sales, and reports across multiple locales.
 
 ## Prerequisites
 

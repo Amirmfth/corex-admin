@@ -27,6 +27,11 @@
     "RESERVED": "Reserved",
     "SOLD": "Sold"
   },
+  "conditions": {
+    "NEW": "New",
+    "USED": "Used",
+    "FOR_PARTS": "For parts"
+  },
   "buttons": {
     "addItem": "Add Item",
     "edit": "Edit",
@@ -57,7 +62,7 @@
     "cancel": "Cancel",
     "clearSelection": "Clear selection",
     "noProducts": "No products matched. Add a product to continue.",
-    "searchPlaceholder":"Search product, model or serial"
+    "searchPlaceholder": "Search product, model or serial"
   },
   "filters": {
     "title": "Filters",
@@ -123,7 +128,7 @@
     "inventoryTotal": "Total cost",
     "profitTitle": "Profit by month",
     "agingTitle": "Aging buckets",
-    "agingBucketLabels": ["0-30 days", "31-90 days", "91-180 days", "181+ days"],
+    "agingBucketLabels": "0-30 days,31-90 days,91-180 days,181+ days",
     "noData": "No data available"
   },
   "purchases": {
@@ -184,5 +189,20 @@
     "viewDetails": "View details",
     "emptyListTitle": "No purchases yet",
     "emptyListBody": "Use the new purchase button to capture your first shipment."
+  },
+  "sales": {
+    "overviewTitle": "Sales history",
+    "overviewSubtitle": "Track customer orders and fulfillment status.",
+    "submit": "New sale",
+    "tableCustomer": "Customer",
+    "tableReference": "Reference",
+    "tableTotalItems": "Total items",
+    "tableFulfilled": "Fulfilled",
+    "tableCreated": "Created",
+    "emptyCustomer": "Unknown",
+    "emptyReference": "None",
+    "viewDetails": "View details",
+    "emptyListTitle": "No sales yet",
+    "emptyListBody": "Use the new sale button to capture your first order."
   }
 }

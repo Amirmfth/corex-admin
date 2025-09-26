@@ -1,9 +1,9 @@
 "use client";
 
 import * as SelectPrimitive from '@radix-ui/react-select';
+import { Check, ChevronDown } from 'lucide-react';
 import { forwardRef } from 'react';
 
-import { Check, ChevronDown } from 'lucide-react';
 
 function cx(...classes: (string | undefined | false)[]) {
   return classes.filter(Boolean).join(' ');
@@ -73,10 +73,15 @@ export const SelectItem = forwardRef<
       )}
       {...props}
     >
-      <span className="flex flex-1 items-center gap-2">{children}</span>
+      {/* This is the key line: */}
+      <SelectPrimitive.ItemText className="flex flex-1 items-center gap-2">
+        {children}
+      </SelectPrimitive.ItemText>
+
       <SelectPrimitive.ItemIndicator className="flex items-center justify-center text-[var(--accent)]">
         <Check className="size-4" aria-hidden />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   );
 });
+

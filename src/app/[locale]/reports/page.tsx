@@ -47,8 +47,9 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
 
   const maxAbsProfit = Math.max(1, ...monthData.map((entry) => Math.abs(entry.value)));
 
-  const agingLabels = tReports('agingBucketLabels') as unknown as string[];
+  const agingLabels = tReports('agingBucketLabels').split(',').map((s) => s.trim());
 
+  console.log({agingBuckets,agingLabels})
   return (
     <section className="flex flex-col gap-6">
       <PageHeader
@@ -114,12 +115,12 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--foreground)]">{tReports('agingTitle')}</h2>
         <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-[var(--border)] text-sm">
+          <table className="min-w-full divide-y divide-[var(--border)] text-sm text-center">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
               <tr>
-                <th className="px-4 py-2 text-left font-medium">{tReports('agingTitle')}</th>
-                <th className="px-4 py-2 text-left font-medium">{tReports('inventoryCount')}</th>
-                <th className="px-4 py-2 text-left font-medium">{tReports('inventoryTotal')}</th>
+                <th className="px-4 py-2  font-medium">{tReports('agingTitle')}</th>
+                <th className="px-4 py-2  font-medium">{tReports('inventoryCount')}</th>
+                <th className="px-4 py-2  font-medium">{tReports('inventoryTotal')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">

@@ -31,8 +31,8 @@ const INITIAL_FORM: FormState = {
   productId: '',
   serial: '',
   purchaseToman: '',
-  feesToman: '0',
-  condition: 'USED',
+  feesToman: '',
+  condition: 'NEW',
   status: 'IN_STOCK',
 };
 const TEXT_FIELD_KEYS = ['serial', 'purchaseToman', 'feesToman'] as const;
@@ -55,6 +55,7 @@ export default function QuickAddItem() {
   const router = useRouter();
   const t = useTranslations('quickAdd');
   const tStatuses = useTranslations('statuses');
+  const tConditions = useTranslations('conditions');
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -67,6 +68,7 @@ export default function QuickAddItem() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const menuCloseTimeoutRef = useRef<number | null>(null);
   function updateForm<K extends keyof FormState>(key: K, value: FormState[K]) {
+
     setForm((prev) => ({ ...prev, [key]: value }));
   }
   function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
@@ -88,6 +90,7 @@ export default function QuickAddItem() {
       clearMenuCloseTimeout();
     }
   }, [open]);
+
   function clearMenuCloseTimeout() {
     if (menuCloseTimeoutRef.current !== null) {
       window.clearTimeout(menuCloseTimeoutRef.current);
@@ -252,6 +255,7 @@ export default function QuickAddItem() {
             }}
             placeholder={t('searchPlaceholder')}
             className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] px-11 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+            autoComplete="off"
           />
           {isProductMenuOpen ? (
             <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_20px_60px_var(--shadow-color)]">
@@ -369,7 +373,7 @@ export default function QuickAddItem() {
             <SelectContent>
               {CONDITION_OPTIONS.map((option) => (
                 <SelectItem key={option} value={option}>
-                  {option}
+                  {tConditions(option)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -418,6 +422,9 @@ export default function QuickAddItem() {
             onChange={handleFieldChange}
             className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
           />
+          <span className="text-xs text-[var(--muted)]">
+            {form.purchaseToman !== '' ? Number(form.purchaseToman).toLocaleString() : ''}
+          </span>
         </div>
         <div>
           <label
@@ -436,6 +443,9 @@ export default function QuickAddItem() {
             onChange={handleFieldChange}
             className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
           />
+          <span className="text-xs text-[var(--muted)]">
+            {form.feesToman !== '' ? Number(form.feesToman).toLocaleString() : ''}
+          </span>
         </div>
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">
@@ -470,7 +480,7 @@ export default function QuickAddItem() {
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
           <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 max-h-[95vh] overflow-y-auto rounded-t-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg">
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
-            <div className="space-y-4">
+            <div className="space-y-4 pb-16">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--foreground)]">{t('title')}</h2>
                 <p className="text-sm text-[var(--muted)]">{t('subtitle')}</p>

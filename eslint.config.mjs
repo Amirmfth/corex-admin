@@ -20,7 +20,7 @@ const config = [
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:@typescript-eslint/recommended',
-    'prettier'
+    'prettier',
   ),
   {
     plugins: {
@@ -33,6 +33,7 @@ const config = [
     },
     rules: {
       'unused-imports/no-unused-imports': 'error',
+      '@typescript-eslint/no-explicit-any': 'off',
       'import/order': [
         'warn',
         {

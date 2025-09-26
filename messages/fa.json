@@ -3,7 +3,7 @@
     "dashboard": "داشبورد",
     "items": "کالاها",
     "products": "محصولات",
-    "sales": "فروش",
+    "sales": "فروش‌ها",
     "reports": "گزارش‌ها",
     "settings": "تنظیمات",
     "purchases": "خریدها"
@@ -26,6 +26,11 @@
     "REPAIR": "در تعمیر",
     "RESERVED": "رزرو شده",
     "SOLD": "فروخته شده"
+  },
+  "conditions": {
+    "NEW": "نو",
+    "USED": "دست دوم",
+    "FOR_PARTS": "برای قطعات"
   },
   "buttons": {
     "addItem": "افزودن کالا",
@@ -57,7 +62,7 @@
     "cancel": "انصراف",
     "clearSelection": "پاک کردن انتخاب",
     "noProducts": "هیچ محصولی یافت نشد. ابتدا یک محصول اضافه کنید.",
-    "searchPlaceholder":"جستجوی محصول، مدل یا سریال"
+    "searchPlaceholder": "جستجوی محصول، مدل یا سریال"
   },
   "filters": {
     "title": "فیلترها",
@@ -123,7 +128,7 @@
     "inventoryTotal": "جمع هزینه",
     "profitTitle": "سود ماهانه",
     "agingTitle": "سن موجودی",
-    "agingBucketLabels": ["۰ تا ۳۰ روز", "۳۱ تا ۹۰ روز", "۹۱ تا ۱۸۰ روز", "بیش از ۱۸۰ روز"],
+    "agingBucketLabels": "۰ تا ۳۰ روز,۳۱ تا ۹۰ روز,۹۱ تا ۱۸۰ روز,بیش از ۱۸۰ روز",
     "noData": "داده‌ای موجود نیست"
   },
   "purchases": {
@@ -184,5 +189,20 @@
     "viewDetails": "جزئیات بیشتر",
     "emptyListTitle": "هنوز خریدی ثبت نشده است",
     "emptyListBody": "با استفاده از دکمه ثبت خرید جدید، اولین محموله را ثبت کنید."
+  },
+  "sales": {
+    "overviewTitle": "تاریخچه فروش‌ها",
+    "overviewSubtitle": "سفارش‌های مشتریان و وضعیت انجام آن‌ها را دنبال کنید.",
+    "submit": "ثبت فروش",
+    "tableCustomer": "مشتری",
+    "tableReference": "مرجع",
+    "tableTotalItems": "کل اقلام",
+    "tableFulfilled": "تحویل شده",
+    "tableCreated": "تاریخ ایجاد",
+    "emptyCustomer": "نامشخص",
+    "emptyReference": "نامشخص",
+    "viewDetails": "جزئیات بیشتر",
+    "emptyListTitle": "هنوز فروشی ثبت نشده است",
+    "emptyListBody": "با استفاده از دکمه ثبت فروش، اولین سفارش را ثبت کنید."
   }
 }

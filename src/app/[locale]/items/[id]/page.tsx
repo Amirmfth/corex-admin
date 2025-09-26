@@ -34,6 +34,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   const typedLocale = locale as AppLocale;
 
   const t = await getTranslations({ locale: typedLocale, namespace: 'itemDetail' });
+  const tConditions = await getTranslations({locale: typedLocale, namespace: "conditions"})
 
   const item = await getItemDetail(id);
 
@@ -104,7 +105,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                   <div>
                     <span className="text-xs uppercase text-[var(--muted)]">{t('condition')}</span>
 
-                    <p className="font-medium text-[var(--foreground)]">{item.condition}</p>
+                    <p className="font-medium text-[var(--foreground)]">{tConditions(item.condition)}</p>
                   </div>
 
                   <div>

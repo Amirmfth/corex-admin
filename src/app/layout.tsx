@@ -1,18 +1,18 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { headers } from 'next/headers';
+import './globals.css';
 
-import { routing, AppLocale } from "../../i18n/routing";
+import { routing, AppLocale } from '../../i18n/routing';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 const DEFAULT_LOCALE = routing.defaultLocale as AppLocale;
@@ -28,8 +28,8 @@ function resolveLocale(candidate: string | null): AppLocale {
 }
 
 export const metadata: Metadata = {
-  title: "Corex Admin",
-  description: "Inventory and sales console",
+  title: 'CoreX Admin',
+  description: 'Inventory and sales console',
 };
 
 export default async function RootLayout({
@@ -38,8 +38,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const requestHeaders = await headers();
-  const locale = resolveLocale(requestHeaders.get("x-next-intl-locale"));
-  const dir = locale === "fa" ? "rtl" : "ltr";
+  const locale = resolveLocale(requestHeaders.get('x-next-intl-locale'));
+  const dir = locale === 'fa' ? 'rtl' : 'ltr';
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>

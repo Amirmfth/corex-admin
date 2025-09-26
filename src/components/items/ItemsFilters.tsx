@@ -46,6 +46,7 @@ export default function ItemsFilters({
 }: ItemsFiltersProps) {
   const t = useTranslations('filters');
   const tStatuses = useTranslations('statuses');
+  const tConditions = useTranslations('conditions');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -200,7 +201,7 @@ export default function ItemsFilters({
                       checked={checked}
                       onChange={() => handleConditionToggle(condition)}
                     />
-                    {condition}
+                    {tConditions(condition)}
                   </label>
                 );
               })}
