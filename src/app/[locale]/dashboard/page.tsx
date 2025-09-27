@@ -9,7 +9,7 @@ import MiniBarChart from '@/components/dashboard/MiniBarChart';
 import PageHeader from '@/components/PageHeader';
 import { Badge } from '@/components/ui/badge';
 
-import { routing, type AppLocale } from '../../../../../i18n/routing';
+import { routing, type AppLocale } from '../../../../i18n/routing';
 import {
   getAvgDaysInStock,
   getAgingBuckets,
@@ -19,8 +19,8 @@ import {
   getMonthlyPnl,
   getProfitMTD,
   getStaleListed,
-} from '../../../../../lib/analytics';
-import { formatToman } from '../../../../../lib/money';
+} from '../../../../lib/analytics';
+import { formatToman } from '../../../../lib/money';
 
 interface DashboardPageProps {
   params: Promise<{ locale: string }>;
@@ -171,10 +171,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-3 rounded-2xl border border-[var(--surface-hover)] bg-white/80 p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--foreground)]">{t('charts.profitTitle')}</h2>
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">
+              {t('charts.profitTitle')}
+            </h2>
             <Badge>{t('charts.profitValue')}</Badge>
           </div>
-          <MiniBarChart data={profitChartData} locale={typedLocale} valueLabel={t('charts.profitValue')} />
+          <MiniBarChart
+            data={profitChartData}
+            locale={typedLocale}
+            valueLabel={t('charts.profitValue')}
+          />
         </div>
         <div className="flex flex-col gap-3 rounded-2xl border border-[var(--surface-hover)] bg-white/80 p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--foreground)]">{t('charts.pnlTitle')}</h2>
@@ -204,7 +210,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           headers={listHeaders}
           formatAge={ageFormatter}
           renderBadge={(item) =>
-            item.ageDays >= 180 ? <Badge variant="warning">{t('lists.aging.badge180')}</Badge> : null
+            item.ageDays >= 180 ? (
+              <Badge variant="warning">{t('lists.aging.badge180')}</Badge>
+            ) : null
           }
         />
         <ItemListPanel

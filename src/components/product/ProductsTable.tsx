@@ -20,14 +20,14 @@ export default function ProductsTable({ products, locale }: ProductsTableProps) 
 
   return (
     <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
-      <table className="min-w-full divide-y divide-[var(--border)] text-sm">
+      <table className="min-w-full divide-y divide-[var(--border)] text-sm text-right">
         <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
           <tr>
-            <th className="px-4 py-3 text-left font-medium">{tProducts("thumb")}</th>
-            <th className="px-4 py-3 text-left font-medium">{tTable("product")}</th>
-            <th className="px-4 py-3 text-left font-medium">{tProducts("category")}</th>
-            <th className="px-4 py-3 text-left font-medium">{tProducts("items")}</th>
-            <th className="px-4 py-3 text-left font-medium">{tProducts("createdAt")}</th>
+            <th className="px-4 py-3 font-medium">{tProducts("thumb")}</th>
+            <th className="px-4 py-3 font-medium">{tTable("product")}</th>
+            <th className="px-4 py-3 font-medium">{tProducts("category")}</th>
+            <th className="px-4 py-3 font-medium">{tProducts("items")}</th>
+            <th className="px-4 py-3 font-medium">{tProducts("createdAt")}</th>
             <th className="px-4 py-3 text-right font-medium">{tTable("actions")}</th>
           </tr>
         </thead>

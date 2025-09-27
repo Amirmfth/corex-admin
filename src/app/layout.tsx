@@ -30,6 +30,12 @@ function resolveLocale(candidate: string | null): AppLocale {
 export const metadata: Metadata = {
   title: 'CoreX Admin',
   description: 'Inventory and sales console',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
 };
 
 export default async function RootLayout({
