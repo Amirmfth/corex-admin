@@ -8,8 +8,33 @@ import {
   subDays,
   subMonths,
 } from 'date-fns';
+import { cache } from 'react';
 
 import { prisma } from './prisma';
+
+function serializeFilter(value: unknown): string {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => serializeFilter(entry)).join(',')}]`;
+  }
+
+  const entries = Object.entries(value as Record<string, unknown>)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, entry]) => `${JSON.stringify(key)}:${serializeFilter(entry)}`);
+
+  return `{${entries.join(',')}}`;
+}
+
+function createFilterKey(namespace: string, filter?: unknown): string {
+  if (typeof filter === 'undefined') {
+    return namespace;
+  }
+
+  return `${namespace}:${serializeFilter(filter)}`;
+}
 
 const ACTIVE_STATUSES: ItemStatus[] = [
   ItemStatus.IN_STOCK,
@@ -767,7 +792,7 @@ export async function getRollingAverages(): Promise<RollingAverages> {
   } satisfies RollingAverages;
 }
 
-export async function getInventoryValue(): Promise<number> {
+const getInventoryValueCached = cache(async () => {
   const aggregate = await prisma.item.aggregate({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -784,9 +809,13 @@ export async function getInventoryValue(): Promise<number> {
   const refurb = aggregate._sum.refurbToman ?? 0;
 
   return purchase + fees + refurb;
+});
+
+export async function getInventoryValue(): Promise<number> {
+  return getInventoryValueCached();
 }
 
-export async function getProfitMTD(): Promise<number> {
+const getProfitMtdCached = cache(async (_cacheKey: string) => {
   const now = new Date();
   const start = startOfMonth(now);
   const end = endOfMonth(now);
@@ -813,17 +842,25 @@ export async function getProfitMTD(): Promise<number> {
     const cost = computeCost(item);
     return total + (sale - cost);
   }, 0);
+});
+
+export async function getProfitMTD(): Promise<number> {
+  return getProfitMtdCached(createFilterKey('analytics:get-profit-mtd'));
 }
 
-export async function getItemsInStockCount(): Promise<number> {
+const getItemsInStockCountCached = cache(async () => {
   return prisma.item.count({
     where: {
       status: ItemStatus.IN_STOCK,
     },
   });
+});
+
+export async function getItemsInStockCount(): Promise<number> {
+  return getItemsInStockCountCached();
 }
 
-export async function getAvgDaysInStock(): Promise<number> {
+const getAvgDaysInStockCached = cache(async () => {
   const items = await prisma.item.findMany({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -843,9 +880,13 @@ export async function getAvgDaysInStock(): Promise<number> {
   }, 0);
 
   return totalDays / items.length;
+});
+
+export async function getAvgDaysInStock(): Promise<number> {
+  return getAvgDaysInStockCached();
 }
 
-export async function getMonthlyPnl({ months }: { months: number }): Promise<MonthlyPnlPoint[]> {
+const getMonthlyPnlCached = cache(async (_cacheKey: string, months: number) => {
   const now = new Date();
   const start = startOfMonth(subMonths(now, months - 1));
   const end = endOfMonth(now);
@@ -898,9 +939,13 @@ export async function getMonthlyPnl({ months }: { months: number }): Promise<Mon
   });
 
   return Array.from(buckets.values()).sort((a, b) => a.month.localeCompare(b.month));
+});
+
+export async function getMonthlyPnl({ months }: { months: number }): Promise<MonthlyPnlPoint[]> {
+  return getMonthlyPnlCached(createFilterKey('analytics:get-monthly-pnl', { months }), months);
 }
 
-export async function getAgingBuckets(): Promise<AgingBuckets> {
+const getAgingBucketsCached = cache(async () => {
   const items = await prisma.item.findMany({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -941,12 +986,13 @@ export async function getAgingBuckets(): Promise<AgingBuckets> {
   });
 
   return result;
+});
+
+export async function getAgingBuckets(): Promise<AgingBuckets> {
+  return getAgingBucketsCached();
 }
 
-export async function getAgingWatchlist(): Promise<{
-  over90: WatchlistItem[];
-  over180: WatchlistItem[];
-}> {
+const getAgingWatchlistCached = cache(async () => {
   const items = await prisma.item.findMany({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -991,9 +1037,16 @@ export async function getAgingWatchlist(): Promise<{
   const over180 = watchlist.filter((item) => item.daysInStock > 180).slice(0, 10);
 
   return { over90, over180 };
+});
+
+export async function getAgingWatchlist(): Promise<{
+  over90: WatchlistItem[];
+  over180: WatchlistItem[];
+}> {
+  return getAgingWatchlistCached();
 }
 
-export async function getStaleListed({ days }: { days: 30 | 60 }): Promise<StaleListedItem[]> {
+const getStaleListedCached = cache(async (_cacheKey: string, days: 30 | 60) => {
   const now = new Date();
   const minDate = subDays(now, days);
 
@@ -1043,4 +1096,8 @@ export async function getStaleListed({ days }: { days: 30 | 60 }): Promise<Stale
       daysListed,
     };
   });
+});
+
+export async function getStaleListed({ days }: { days: 30 | 60 }): Promise<StaleListedItem[]> {
+  return getStaleListedCached(createFilterKey('analytics:get-stale-listed', { days }), days);
 }
