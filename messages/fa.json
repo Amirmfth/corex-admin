@@ -313,6 +313,77 @@
     "agingBucketLabels": "۰ تا ۳۰ روز,۳۱ تا ۹۰ روز,۹۱ تا ۱۸۰ روز,بیش از ۱۸۰ روز",
     "noData": "داده‌ای موجود نیست"
   },
+  "reportsDashboard": {
+    "title": "گزارش‌های پیشرفته",
+    "subtitle": "سودآوری، ترکیب و ریسک موجودی را بررسی کنید.",
+    "financialDescription": "روند سود و جریان نقد را در بازه‌های متحرک پیگیری کنید.",
+    "compositionDescription": "منابع درآمد و توزیع موجودی را بشناسید.",
+    "performanceDescription": "محصولات و دسته‌های موثر بر نتایج را ببینید.",
+    "riskDescription": "موجودی مانده، بازده تعمیر و فرصت‌های تبدیل را شناسایی کنید.",
+    "filters": {
+      "dateRange": "بازه زمانی",
+      "to": "تا",
+      "channels": "کانال‌ها",
+      "allChannels": "همه کانال‌ها",
+      "selected": "انتخاب شده",
+      "done": "تایید",
+      "category": "دسته‌بندی",
+      "allCategories": "همه دسته‌ها",
+      "apply": "اعمال",
+      "export": "خروجی CSV",
+      "exportCurrent": "نمای فعلی",
+      "exportAll": "کل داده‌ها"
+    },
+    "sections": {
+      "financial": "سود و روندها",
+      "composition": "ترکیب و سهم",
+      "performance": "عملکرد",
+      "riskOpportunity": "ریسک و فرصت"
+    },
+    "charts": {
+      "month": "ماه",
+      "profitByMonth": "سود ماهانه",
+      "revenueCostProfit": "درآمد در برابر هزینه و سود",
+      "rollingAverages": "میانگین‌های ۳۰/۶۰ روزه",
+      "channelMix": "سهم کانال",
+      "inventoryStatus": "موجودی بر اساس وضعیت",
+      "topCategories": "دسته‌های برتر از نظر ارزش",
+      "topProducts": "محصولات برتر از نظر سود",
+      "sellThrough": "فروش‌رفتگی بر اساس دسته",
+      "listingFunnel": "قیف انتشار",
+      "agingHistogram": "سن موجودی",
+      "repairRoi": "بازده تعمیر",
+      "priceVsMargin": "قیمت در برابر حاشیه"
+    },
+    "tables": {
+      "channel": "کانال",
+      "share": "سهم",
+      "revenue": "درآمد",
+      "cost": "هزینه",
+      "profit": "سود",
+      "product": "محصول",
+      "category": "دسته‌بندی",
+      "channels": "کانال‌ها",
+      "noProducts": "محصولی یافت نشد",
+      "margin": "حاشیه",
+      "price": "قیمت"
+    },
+    "funnel": {
+      "inStock": "در انبار",
+      "listed": "منتشر شده",
+      "sold": "فروخته شده"
+    },
+    "status": {
+      "IN_STOCK": "در انبار",
+      "LISTED": "منتشر شده",
+      "RESERVED": "رزرو شده",
+      "REPAIR": "در تعمیر"
+    },
+    "repair": {
+      "refurbished": "تعمیر شده",
+      "standard": "استاندارد"
+    }
+  },
   "purchases": {
     "pageTitle": "خرید جدید",
     "pageSubtitle": "محموله‌های تامین‌کننده را ثبت کنید و برای دریافت آماده شوید.",
