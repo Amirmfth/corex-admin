@@ -145,7 +145,7 @@
     "open": "Add Item",
     "loading": "Creating...",
     "cancel": "Cancel",
-    "clearSelection": "Clear selection",
+    "clearSelection": "Clear",
     "noProducts": "No products matched. Add a product to continue.",
     "searchPlaceholder": "Search product, model or serial",
     "createProduct": {
