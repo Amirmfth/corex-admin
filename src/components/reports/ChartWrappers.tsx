@@ -1,8 +1,5 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-import { useMemo } from 'react';
-
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -21,6 +18,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+
+import { useLocale } from 'next-intl';
+import { useMemo } from 'react';
 
 import { formatToman } from '../../../lib/money';
 

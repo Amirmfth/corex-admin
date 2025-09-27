@@ -30,6 +30,12 @@ const config = [
       next: {
         rootDir: ['src'],
       },
+      'import/core-modules': ['recharts'],
+      'import/resolver': {
+        typescript: {
+          project: path.join(__dirname, 'tsconfig.json'),
+        },
+      },
     },
     rules: {
       'unused-imports/no-unused-imports': 'error',
