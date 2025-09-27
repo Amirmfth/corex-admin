@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -47,6 +47,7 @@ function serializeSpecs(value: unknown): string {
 export default function ProductForm({ mode, productId, initialValues, redirectTo }: ProductFormProps) {
   const router = useRouter();
   const t = useTranslations("products.form");
+  const locale = useLocale();
   const [name, setName] = useState(() => initialValues?.name ?? "");
   const [brand, setBrand] = useState(() => initialValues?.brand ?? "");
   const [model, setModel] = useState(() => initialValues?.model ?? "");
@@ -107,7 +108,7 @@ export default function ProductForm({ mode, productId, initialValues, redirectTo
     try {
       const response = await fetch(endpoint, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept-Language": locale },
         body: JSON.stringify(payload),
       });
 
