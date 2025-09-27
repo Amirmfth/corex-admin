@@ -356,16 +356,21 @@ export default function SaleBuilder({ locale, initialItems }: SaleBuilderProps) 
                     >
                       {t('unitPrice')}
                     </label>
-                    <input
-                      id={`unit-${line.item.id}`}
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      value={line.unitToman}
-                      onChange={(event) => updateLine(index, event.target.value)}
-                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none sm:max-w-xs"
-                      required
-                    />
+                    <div className="flex flex-col space-y-1">
+                      <input
+                        id={`unit-${line.item.id}`}
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        value={line.unitToman}
+                        onChange={(event) => updateLine(index, event.target.value)}
+                        className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none sm:max-w-xs"
+                        required
+                      />
+                      <span className="text-xs text-[var(--muted)]">
+                        {line.unitToman !== '' ? Number(line.unitToman).toLocaleString() : ''}
+                      </span>
+                    </div>
                   </div>
                 </li>
               ))}

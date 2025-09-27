@@ -9,8 +9,8 @@ interface KpiCardProps {
 
 const ACCENT_CLASSES: Record<Required<KpiCardProps>['accent'], string> = {
   default: 'bg-[var(--surface)] border-[var(--surface-hover)] text-[var(--foreground)]',
-  positive: 'bg-emerald-50/80 border-emerald-200 text-emerald-900',
-  warning: 'bg-amber-50/80 border-amber-200 text-amber-900',
+  positive: 'bg-emerald-400/80 border-emerald-300 text-emerald-900',
+  warning: 'bg-amber-400/80 border-amber-300 text-amber-900',
 };
 
 export default function KpiCard({ label, value, helper, accent = 'default' }: KpiCardProps) {

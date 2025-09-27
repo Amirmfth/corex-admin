@@ -5,13 +5,13 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-import type { AppLocale } from '../../i18n/routing';
+import type { AppLocale } from '../../../i18n/routing';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const DEFAULT_LINE = {
   quantity: '1',
   unitToman: '',
-  feesToman: '0',
+  feesToman: '',
 };
 
 type ProductOption = {
@@ -42,7 +42,7 @@ function formatOptionLabel(product: ProductOption) {
   if (product.model) {
     parts.push(product.model);
   }
-  return parts.join(' Â· ');
+  return parts.join(' - ');
 }
 
 function createLine(products: ProductOption[]): LineState {
@@ -304,6 +304,9 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
                     disabled={pending}
                     required
                   />
+                  <span className="text-xs text-[var(--muted)]">
+                    {line.unitToman !== '' ? Number(line.unitToman).toLocaleString() : ''}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <label
@@ -321,6 +324,9 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
                     className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
                     disabled={pending}
                   />
+                  <span className="text-xs text-[var(--muted)]">
+                    {line.feesToman !== '' ? Number(line.feesToman).toLocaleString() : ''}
+                  </span>
                 </div>
                 <div className="flex items-end justify-end">
                   <button

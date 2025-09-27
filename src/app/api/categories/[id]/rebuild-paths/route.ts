@@ -10,7 +10,7 @@ interface RouteParams {
   };
 }
 
-export async function POST(_request: Request, { params }: RouteParams) {
+export async function POST(req, { params }: RouteParams) {
   const categoryId = params.id;
 
   try {
