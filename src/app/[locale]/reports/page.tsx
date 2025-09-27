@@ -84,7 +84,13 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   return (
     <div className="space-y-6">
       <PageHeader title={t('title')} description={t('subtitle')} />
-      <ReportsDashboard data={aggregates} filters={serialized} channels={channels} categories={categories} />
+      <ReportsDashboard
+        data={aggregates}
+        filters={serialized}
+        channels={channels}
+        categories={categories}
+        defaultFilters={{ categoryId: '', channels: [], from: '', to: '' }}
+      />
     </div>
   );
 }
