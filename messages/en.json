@@ -312,6 +312,77 @@
     "agingBucketLabels": "0-30 days,31-90 days,91-180 days,181+ days",
     "noData": "No data available"
   },
+  "reportsDashboard": {
+    "title": "Advanced Reports",
+    "subtitle": "Analyze profitability, mix, and risk across your catalog.",
+    "financialDescription": "Track profit trends and cash performance across rolling windows.",
+    "compositionDescription": "Understand where revenue comes from and how inventory is distributed.",
+    "performanceDescription": "See which products and categories are driving results.",
+    "riskDescription": "Spot aging stock, repair ROI, and conversion opportunities.",
+    "filters": {
+      "dateRange": "Date range",
+      "to": "to",
+      "channels": "Channels",
+      "allChannels": "All channels",
+      "selected": "selected",
+      "done": "Done",
+      "category": "Category",
+      "allCategories": "All categories",
+      "apply": "Apply",
+      "export": "Export CSV",
+      "exportCurrent": "Current view",
+      "exportAll": "Full dataset"
+    },
+    "sections": {
+      "financial": "P&L & Trends",
+      "composition": "Composition & Mix",
+      "performance": "Performance",
+      "riskOpportunity": "Risk & Opportunity"
+    },
+    "charts": {
+      "month": "Month",
+      "profitByMonth": "Monthly profit",
+      "revenueCostProfit": "Revenue vs cost vs profit",
+      "rollingAverages": "Rolling 30/60 day averages",
+      "channelMix": "Channel mix",
+      "inventoryStatus": "Inventory by status",
+      "topCategories": "Top categories by value",
+      "topProducts": "Top products by profit",
+      "sellThrough": "Sell-through by category",
+      "listingFunnel": "Listing funnel",
+      "agingHistogram": "Aging histogram",
+      "repairRoi": "Repair ROI",
+      "priceVsMargin": "Price vs margin"
+    },
+    "tables": {
+      "channel": "Channel",
+      "share": "Share",
+      "revenue": "Revenue",
+      "cost": "Cost",
+      "profit": "Profit",
+      "product": "Product",
+      "category": "Category",
+      "channels": "Channels",
+      "noProducts": "No products found",
+      "margin": "Margin",
+      "price": "Price"
+    },
+    "funnel": {
+      "inStock": "In stock",
+      "listed": "Listed",
+      "sold": "Sold"
+    },
+    "status": {
+      "IN_STOCK": "In stock",
+      "LISTED": "Listed",
+      "RESERVED": "Reserved",
+      "REPAIR": "In repair"
+    },
+    "repair": {
+      "refurbished": "Refurbished",
+      "standard": "Standard"
+    }
+  },
   "purchases": {
     "pageTitle": "New purchase",
     "pageSubtitle": "Capture supplier shipments and prepare inventory for receiving.",
