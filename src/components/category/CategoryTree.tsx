@@ -2,7 +2,7 @@
 
 import { GripVertical, Loader2, Pencil, Plus, ArrowUpRight, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -29,6 +29,7 @@ export default function CategoryTree({ categories }: CategoryTreeProps) {
   const router = useRouter();
   const t = useTranslations("categories");
   const tButtons = useTranslations("buttons");
+  const locale = useLocale();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const allCategories = useMemo(() => categories, [categories]);
@@ -39,6 +40,9 @@ export default function CategoryTree({ categories }: CategoryTreeProps) {
         setDeletingId(category.id);
         const response = await fetch(`/api/categories/${category.id}`, {
           method: "DELETE",
+          headers: {
+            "Accept-Language": locale,
+          },
         });
 
         if (!response.ok) {
@@ -58,7 +62,7 @@ export default function CategoryTree({ categories }: CategoryTreeProps) {
         setDeletingId(null);
       }
     },
-    [router, t]
+    [locale, router, t]
   );
 
   function renderNodes(nodes: CategoryTreeNode[], depth = 0) {
@@ -86,8 +90,13 @@ export default function CategoryTree({ categories }: CategoryTreeProps) {
                   <div className="flex flex-1 items-start gap-3">
                     <GripVertical className="mt-1 size-4 text-[var(--muted)]" aria-hidden />
                     <div className="min-w-0 space-y-2">
-                      <div className="break-words text-base font-semibold text-[var(--foreground)]">
-                        {node.name}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="break-words text-base font-semibold text-[var(--foreground)]">
+                          {node.name}
+                        </div>
+                        <span className="inline-flex items-center rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-xs font-medium text-[var(--muted-strong)]">
+                          {t("badges.products", { count: node.productCount })}
+                        </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
                         <span className="font-medium text-[var(--muted-strong)]">

@@ -128,6 +128,9 @@
       "notListed": "Not listed",
       "notSold": "Not sold",
       "viewItem": "View item"
+    },
+    "delete": {
+      "hasItems": "Remove all inventory items for this product before deleting it."
     }
   },
   "quickAdd": {
@@ -191,6 +194,9 @@
       "confirm": "Delete",
       "disabledChildren": "Remove subcategories before deleting this category.",
       "disabledProducts": "{count, plural, one {Remove the product assigned to this category first.} other {Remove the # products assigned to this category first.}}"
+    },
+    "badges": {
+      "products": "{count, plural, one {# product} other {# products}}"
     }
   },
   "filters": {

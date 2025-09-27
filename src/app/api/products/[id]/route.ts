@@ -1,6 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 
+import { resolveRequestLocale } from "../../../../../lib/api-locale";
 import { prisma } from "../../../../../lib/prisma";
 import { updateProductSchema } from "../../../../../lib/validation.product";
 import { BadRequestError, NotFoundError, handleApiError, parseJsonBody } from "../_utils";
@@ -81,8 +83,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const locale = resolveRequestLocale(request);
+    const t = await getTranslations({ locale, namespace: "products" });
     const product = await prisma.product.findUnique({
       where: { id: params.id },
       select: { id: true, _count: { select: { items: true } } },
@@ -93,7 +97,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     }
 
     if (product._count.items > 0) {
-      throw new BadRequestError("Cannot delete a product that still has inventory items");
+      throw new BadRequestError(t("delete.hasItems"));
     }
 
     await prisma.product.delete({ where: { id: params.id } });

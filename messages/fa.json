@@ -129,6 +129,9 @@
       "notListed": "ثبت نشده",
       "notSold": "فروخته نشده",
       "viewItem": "مشاهده کالا"
+    },
+    "delete": {
+      "hasItems": "ابتدا تمام کالاهای این محصول را حذف کنید."
     }
   },
   "quickAdd": {
@@ -192,6 +195,9 @@
       "confirm": "حذف",
       "disabledChildren": "ابتدا زیرمجموعه‌های این دسته‌بندی را حذف کنید.",
       "disabledProducts": "{count, plural, one {ابتدا محصول منتسب به این دسته‌بندی را حذف کنید.} other {ابتدا {count} محصول منتسب به این دسته‌بندی را حذف کنید.}}"
+    },
+    "badges": {
+      "products": "{count, plural, one {# محصول} other {# محصول}}"
     }
   },
   "filters": {

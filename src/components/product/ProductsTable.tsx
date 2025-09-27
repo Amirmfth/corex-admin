@@ -61,7 +61,9 @@ export default function ProductsTable({ products, locale }: ProductsTableProps) 
                 </td>
                 <td className="px-4 py-3 text-[var(--foreground)]">{categoryPath}</td>
                 <td className="px-4 py-3 text-[var(--foreground)]">
-                  {product.itemsCount.toLocaleString(intlLocale)}
+                  <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-xs font-semibold text-[var(--muted-strong)]">
+                    {product.itemsCount.toLocaleString(intlLocale)}
+                  </span>
                 </td>
                 <td className="px-4 py-3 text-[var(--foreground)]">
                   {dateFormatter.format(new Date(product.createdAt))}

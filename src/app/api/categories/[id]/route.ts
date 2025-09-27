@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 
+import { resolveRequestLocale } from "../../../../../lib/api-locale";
 import { rebuildCategorySubtreePaths } from "../../../../../lib/category-path";
 import { prisma } from "../../../../../lib/prisma";
 import { updateCategorySchema } from "../../../../../lib/validation.category";
@@ -89,10 +91,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: RouteParams) {
+export async function DELETE(request: Request, { params }: RouteParams) {
   const categoryId = params.id;
 
   try {
+    const locale = resolveRequestLocale(request);
+    const t = await getTranslations({ locale, namespace: "categories" });
     const result = await prisma.$transaction(async (tx) => {
       const existing = await tx.category.findUnique({ where: { id: categoryId } });
 
@@ -106,11 +110,11 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
       ]);
 
       if (childCount > 0) {
-        throw new BadRequestError("Cannot delete category with child categories");
+        throw new BadRequestError(t("delete.disabledChildren"));
       }
 
       if (productCount > 0) {
-        throw new BadRequestError("Cannot delete category with products");
+        throw new BadRequestError(t("delete.disabledProducts", { count: productCount }));
       }
 
       await tx.category.delete({ where: { id: categoryId } });
