@@ -25,8 +25,13 @@ function toArray<T extends string>(value: string | string[] | undefined, validat
     return [];
   }
 
-  const values = Array.isArray(value) ? value : [value];
-  return values.filter((entry): entry is T => validator.has(entry as T));
+  const rawValues = Array.isArray(value) ? value : [value];
+  const normalized = rawValues
+    .flatMap((entry) => entry.split(',').map((part) => part.trim()))
+    .filter((entry) => entry.length > 0);
+
+  const unique = Array.from(new Set(normalized));
+  return unique.filter((entry): entry is T => validator.has(entry as T));
 }
 
 function getPage(searchParams: Record<string, string | string[] | undefined>) {

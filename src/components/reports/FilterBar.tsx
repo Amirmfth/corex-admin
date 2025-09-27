@@ -7,35 +7,38 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReportChannel } from '../../../lib/reporting-data';
 
 export type FilterState = {
-  start: string;
-  end: string;
+  from: string;
+  to: string;
   channels: ReportChannel[];
-  category: string | null;
+  categoryId: string | null;
 };
 
 type FilterBarProps = {
   channels: ReportChannel[];
   categories: string[];
   initialFilters: FilterState;
+  defaultFilters: FilterState;
   onExportCurrent: () => Promise<void> | void;
   onExportAll: () => Promise<void> | void;
 };
 
-function formatRangeLabel(locale: string, start: string, end: string) {
+function formatRangeLabel(locale: string, from: string, to: string) {
   const formatter = new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
-  const fromDate = start ? formatter.format(new Date(start)) : '—';
-  const toDate = end ? formatter.format(new Date(end)) : '—';
-  return `${fromDate} → ${toDate}`;
+  const fromDate = from ? formatter.format(new Date(from)) : '—';
+  const toDate = to ? formatter.format(new Date(to)) : '—';
+  const arrow = locale === 'fa' ? '←' : '→';
+  return `${fromDate} ${arrow} ${toDate}`;
 }
 
 export default function FilterBar({
   channels,
   categories,
   initialFilters,
+  defaultFilters,
   onExportCurrent,
   onExportAll,
 }: FilterBarProps) {
@@ -45,23 +48,23 @@ export default function FilterBar({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [start, setStart] = useState(initialFilters.start);
-  const [end, setEnd] = useState(initialFilters.end);
+  const [from, setFrom] = useState(initialFilters.from);
+  const [to, setTo] = useState(initialFilters.to);
   const [selectedChannels, setSelectedChannels] = useState<ReportChannel[]>(initialFilters.channels);
-  const [selectedCategory, setSelectedCategory] = useState(initialFilters.category ?? '');
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialFilters.categoryId ?? '');
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
   useEffect(() => {
-    setStart(initialFilters.start);
-    setEnd(initialFilters.end);
+    setFrom(initialFilters.from);
+    setTo(initialFilters.to);
     setSelectedChannels(initialFilters.channels);
-    setSelectedCategory(initialFilters.category ?? '');
+    setSelectedCategoryId(initialFilters.categoryId ?? '');
   }, [initialFilters]);
 
   const rangeLabel = useMemo(
-    () => formatRangeLabel(locale, start, end),
-    [locale, start, end],
+    () => formatRangeLabel(locale, from, to),
+    [locale, from, to],
   );
 
   const toggleChannel = (channel: ReportChannel) => {
@@ -76,16 +79,39 @@ export default function FilterBar({
   const allChannelsSelected = selectedChannels.length === channels.length;
 
   const applyFilters = () => {
-    if (!start || !end) return;
+    if (!from || !to) return;
     const params = new URLSearchParams(searchParams?.toString());
-    params.set('start', start);
-    params.set('end', end);
-    params.delete('channel');
-    selectedChannels.forEach((channel) => params.append('channel', channel));
-    if (selectedCategory) {
-      params.set('category', selectedCategory);
+    params.set('from', from);
+    params.set('to', to);
+    params.delete('channels[]');
+    selectedChannels.forEach((channel) => params.append('channels[]', channel));
+    if (selectedCategoryId) {
+      params.set('categoryId', selectedCategoryId);
     } else {
-      params.delete('category');
+      params.delete('categoryId');
+    }
+    params.delete('page');
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+    setChannelsOpen(false);
+    setExportOpen(false);
+  };
+
+  const handleReset = () => {
+    setFrom(defaultFilters.from);
+    setTo(defaultFilters.to);
+    setSelectedChannels(defaultFilters.channels);
+    setSelectedCategoryId(defaultFilters.categoryId ?? '');
+
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set('from', defaultFilters.from);
+    params.set('to', defaultFilters.to);
+    params.delete('channels[]');
+    defaultFilters.channels.forEach((channel) => params.append('channels[]', channel));
+    if (defaultFilters.categoryId) {
+      params.set('categoryId', defaultFilters.categoryId);
+    } else {
+      params.delete('categoryId');
     }
     params.delete('page');
     const queryString = params.toString();
@@ -115,17 +141,19 @@ export default function FilterBar({
             <input
               type="date"
               className="flex-1 rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-              value={start}
-              onChange={(event) => setStart(event.target.value)}
-              max={end}
+              value={from}
+              onChange={(event) => setFrom(event.target.value)}
+              max={to}
+              dir={locale === 'fa' ? 'rtl' : 'ltr'}
             />
             <span className="text-xs text-[var(--muted)]">{tFilters('to')}</span>
             <input
               type="date"
               className="flex-1 rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-              value={end}
-              onChange={(event) => setEnd(event.target.value)}
-              min={start}
+              value={to}
+              onChange={(event) => setTo(event.target.value)}
+              min={from}
+              dir={locale === 'fa' ? 'rtl' : 'ltr'}
             />
           </div>
           <p className="text-xs text-[var(--muted)]">{rangeLabel}</p>
@@ -190,8 +218,8 @@ export default function FilterBar({
           </label>
           <select
             className="rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-            value={selectedCategory}
-            onChange={(event) => setSelectedCategory(event.target.value)}
+            value={selectedCategoryId}
+            onChange={(event) => setSelectedCategoryId(event.target.value)}
           >
             <option value="">{tFilters('allCategories')}</option>
             {categories.map((category) => (
@@ -208,9 +236,16 @@ export default function FilterBar({
               type="button"
               className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
               onClick={applyFilters}
-              disabled={!start || !end}
+              disabled={!from || !to}
             >
               {tFilters('apply')}
+            </button>
+            <button
+              type="button"
+              className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm transition hover:border-[var(--accent)]"
+              onClick={handleReset}
+            >
+              {tFilters('reset')}
             </button>
             <div className="relative">
               <button
