@@ -10,6 +10,8 @@ import {
   startOfMonth,
 } from 'date-fns';
 
+import type { BusinessRulesSettings } from './settings';
+
 export type ReportChannel =
   | 'Online Store'
   | 'Retail Shop'
@@ -597,31 +599,53 @@ function computeListingFunnel(acquiredRecords: ReportRecord[]): ListingFunnelEnt
   ];
 }
 
-function computeAging(acquiredRecords: ReportRecord[]): AgingBucketEntry[] {
-  const buckets = new Map<number, { count: number; total: number }>();
+function buildAgingDefinitions(businessRules: BusinessRulesSettings) {
+  const [first, second, third] = businessRules.agingThresholds;
+  return [
+    { label: `0-${first}`, min: 0, max: first },
+    { label: `${first + 1}-${second}`, min: first + 1, max: second },
+    { label: `${second + 1}-${third}`, min: second + 1, max: third },
+    { label: `${third + 1}+`, min: third + 1, max: null },
+  ];
+}
+
+function computeAging(
+  acquiredRecords: ReportRecord[],
+  businessRules: BusinessRulesSettings,
+): AgingBucketEntry[] {
+  const definitions = buildAgingDefinitions(businessRules);
+  const buckets = definitions.map(() => ({ count: 0, total: 0 }));
 
   acquiredRecords.forEach((record) => {
     const acquiredDate = parseISODate(record.acquiredAt) ?? NOW;
     const completedDate = parseISODate(record.soldAt ?? null) ?? NOW;
     const days = Math.max(differenceInCalendarDays(completedDate, acquiredDate), 0);
-    const bucketIndex = Math.min(Math.floor(days / 10), 11);
-    const bucket = buckets.get(bucketIndex) ?? { count: 0, total: 0 };
+
+    const index = definitions.findIndex((definition) => {
+      if (definition.max == null) {
+        return days >= definition.min;
+      }
+      return days >= definition.min && days <= definition.max;
+    });
+
+    if (index === -1) {
+      return;
+    }
+
+    const bucket = buckets[index]!;
     bucket.count += 1;
     bucket.total += record.cost + record.refurbCost;
-    buckets.set(bucketIndex, bucket);
   });
 
-  return Array.from({ length: 12 }).map((_, index) => {
-    const bucket = buckets.get(index) ?? { count: 0, total: 0 };
-    const start = index * 10;
-    const end = index === 11 ? null : start + 9;
+  return definitions.map((definition, index) => {
+    const bucket = buckets[index]!;
     return {
-      label: end == null ? `${start}+` : `${start}-${end}`,
-      rangeStart: start,
-      rangeEnd: end,
+      label: definition.label,
+      rangeStart: definition.min,
+      rangeEnd: definition.max,
       count: bucket.count,
       totalValue: bucket.total,
-    };
+    } satisfies AgingBucketEntry;
   });
 }
 
@@ -666,7 +690,10 @@ function computePriceVsMargin(soldRecords: ReportRecord[]): PriceMarginPoint[] {
   });
 }
 
-export function getReportsAggregates(filters: ReportFilters): ReportsAggregates {
+export function getReportsAggregates(
+  filters: ReportFilters,
+  businessRules: BusinessRulesSettings,
+): ReportsAggregates {
   const { filters: normalized, acquiredRecords, soldRecords } = filterRecords(filters);
 
   return {
@@ -678,7 +705,7 @@ export function getReportsAggregates(filters: ReportFilters): ReportsAggregates 
     topProducts: computeTopProducts(soldRecords),
     sellThrough: computeSellThrough(acquiredRecords, soldRecords),
     listingFunnel: computeListingFunnel(acquiredRecords),
-    aging: computeAging(acquiredRecords),
+    aging: computeAging(acquiredRecords, businessRules),
     repair: computeRepairRoi(soldRecords),
     priceVsMargin: computePriceVsMargin(soldRecords),
   };

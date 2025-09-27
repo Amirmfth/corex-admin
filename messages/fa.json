@@ -9,6 +9,108 @@
     "settings": "تنظیمات",
     "purchases": "خریدها"
   },
+  "settings": {
+    "title": "تنظیمات سیستم",
+    "subtitle": "پیش‌فرض‌ها، نحوه نمایش و قوانین کاری را مدیریت کنید.",
+    "tabs": {
+      "general": "عمومی",
+      "display": "نمایش",
+      "rules": "قوانین کسب‌وکار",
+      "data": "داده"
+    },
+    "general": {
+      "businessName": {
+        "label": "نام کسب‌وکار",
+        "placeholder": "CoreX",
+        "description": "در خروجی‌ها و داشبوردهای اشتراکی نمایش داده می‌شود."
+      },
+      "defaultChannel": {
+        "label": "کانال پیش‌فرض",
+        "placeholder": "انتخاب کانال",
+        "description": "هنگام ثبت خرید و فروش به صورت خودکار استفاده می‌شود."
+      },
+      "defaultCondition": {
+        "label": "وضعیت پیش‌فرض کالا",
+        "placeholder": "انتخاب وضعیت",
+        "description": "برای ثبت آیتم‌های جدید به صورت پیش‌فرض انتخاب می‌شود."
+      }
+    },
+    "display": {
+      "locale": {
+        "label": "زبان پیش‌فرض",
+        "placeholder": "انتخاب زبان",
+        "description": "بر نمایش زبان، تاریخ و اعداد اثر می‌گذارد."
+      },
+      "rtl": {
+        "label": "چیدمان راست‌به‌چپ",
+        "on": "فعال",
+        "off": "غیرفعال",
+        "description": "برای فارسی به صورت خودکار فعال است."
+      },
+      "currency": {
+        "label": "واحد پول",
+        "value": "تومان",
+        "description": "ارقام برای دقت بیشتر به‌صورت عدد صحیح ذخیره می‌شوند."
+      },
+      "numberPreview": {
+        "label": "نمونه قالب‌بندی عدد"
+      }
+    },
+    "rules": {
+      "agingThresholds": {
+        "label": "آستانه‌های فرسودگی (روز)",
+        "description": "در داشبورد و گزارش‌ها برای دسته‌بندی استفاده می‌شود.",
+        "labels": {
+          "0": "آستانه اول",
+          "1": "آستانه دوم",
+          "2": "آستانه بحرانی"
+        }
+      },
+      "minimumMargin": {
+        "label": "هشدار حداقل حاشیه سود (%)",
+        "description": "فروش‌هایی که زیر این حاشیه باشند هشدار می‌گیرند."
+      },
+      "staleThresholds": {
+        "label": "آستانه‌های آگهی راکد (روز)",
+        "description": "زمان نمایش آگهی‌های راکد را تعیین می‌کند.",
+        "warning": "آستانه هشدار",
+        "critical": "آستانه بحرانی"
+      }
+    },
+    "data": {
+      "description": "داده‌های عملیاتی را برای تحلیل خارجی خروجی یا وارد کنید.",
+      "helper": "خروجی‌ها در تب جدید به صورت JSON باز می‌شوند.",
+      "exports": {
+        "reports": "خروجی گزارش‌ها",
+        "inventory": "خروجی موجودی"
+      },
+      "import": {
+        "label": "ورود محصولات"
+      }
+    },
+    "actions": {
+      "reset": "بازنشانی",
+      "save": "ذخیره تغییرات",
+      "saving": "در حال ذخیره..."
+    },
+    "feedback": {
+      "saveSuccess": "تنظیمات ذخیره شد",
+      "saveError": "ذخیره تنظیمات ممکن نشد",
+      "invalid": "خطاهای مشخص‌شده را برطرف کنید."
+    },
+    "options": {
+      "channels": {
+        "DIRECT": "مستقیم",
+        "ONLINE": "آنلاین",
+        "WHOLESALE": "عمده‌فروشی",
+        "OTHER": "سایر"
+      },
+      "locales": {
+        "fa": "فارسی (fa)",
+        "en": "انگلیسی (en)"
+      }
+    }
+  },
   "dashboard": {
     "title": "داشبورد عملیات",
     "subtitle": "عملکرد مالی و سلامت موجودی را پایش کنید.",
@@ -42,14 +144,14 @@
       "ageLabel": "{count} روز",
       "aging": {
         "title": "هشدار فرسودگی",
-        "description": "{over90} آیتم بالای ۹۰ روز · {over180} بالای ۱۸۰",
-        "badge180": "۱۸۰+ روز",
+        "description": "{warningCount} آیتم بالای {warningDays} روز · {criticalCount} بیش از {criticalDays} روز",
+        "badgeCritical": "{days}+ روز",
         "empty": "آیتم قدیمی وجود ندارد."
       },
       "stale": {
         "title": "لیست‌شده اما راکد",
-        "description": "{over30} لیست بالای ۳۰ روز · {over60} بالای ۶۰",
-        "badge60": "۶۰+ روز",
+        "description": "{warningCount} لیست بالای {warningDays} روز · {criticalCount} بیش از {criticalDays} روز",
+        "badgeCritical": "{days}+ روز",
         "empty": "لیست راکدی وجود ندارد."
       }
     }

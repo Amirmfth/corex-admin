@@ -3,6 +3,7 @@ import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 
 import { prisma } from "./prisma";
+import { getBusinessRulesSettings } from "./settings";
 
 export type InventorySummary = {
   totalCost: number;
@@ -101,14 +102,16 @@ export async function getMonthlyProfit(): Promise<MonthlyProfitPoint[]> {
   );
 }
 
-const AGING_BUCKETS: { label: string; min: number; max: number | null }[] = [
-  { label: "0-30", min: 0, max: 30 },
-  { label: "31-90", min: 31, max: 90 },
-  { label: "91-180", min: 91, max: 180 },
-  { label: "181+", min: 181, max: null },
-];
-
 export async function getAgingBuckets(): Promise<AgingBucket[]> {
+  const businessRules = await getBusinessRulesSettings();
+  const [first, second, third] = businessRules.agingThresholds;
+  const definitions: { label: string; min: number; max: number | null }[] = [
+    { label: `0-${first}`, min: 0, max: first },
+    { label: `${first + 1}-${second}`, min: first + 1, max: second },
+    { label: `${second + 1}-${third}`, min: second + 1, max: third },
+    { label: `${third + 1}+`, min: third + 1, max: null },
+  ];
+
   const items = await prisma.item.findMany({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -123,7 +126,7 @@ export async function getAgingBuckets(): Promise<AgingBucket[]> {
 
   const now = new Date();
 
-  const totals = AGING_BUCKETS.map((bucket) => ({
+  const totals = definitions.map((bucket) => ({
     label: bucket.label,
     count: 0,
     totalCost: 0,
@@ -133,7 +136,7 @@ export async function getAgingBuckets(): Promise<AgingBucket[]> {
     const days = Math.floor((now.getTime() - item.acquiredAt.getTime()) / (1000 * 60 * 60 * 24));
     const cost = item.purchaseToman + item.feesToman + item.refurbToman;
 
-    const index = AGING_BUCKETS.findIndex((bucket) => {
+    const index = definitions.findIndex((bucket) => {
       if (bucket.max == null) {
         return days >= bucket.min;
       }

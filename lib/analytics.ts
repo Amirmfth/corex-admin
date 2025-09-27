@@ -11,6 +11,7 @@ import {
 import { cache } from 'react';
 
 import { prisma } from './prisma';
+import { getBusinessRulesSettings } from './settings';
 
 function serializeFilter(value: unknown): string {
   if (value === null || typeof value !== 'object') {
@@ -158,9 +159,16 @@ export type RollingAverages = {
   };
 };
 
-export type AgingBucketKey = '0-30' | '31-90' | '91-180' | '181+';
+export type AgingBucket = {
+  key: string;
+  label: string;
+  minDays: number;
+  maxDays: number | null;
+  count: number;
+  totalT: number;
+};
 
-export type AgingBuckets = Record<AgingBucketKey, { count: number; totalT: number }>;
+export type AgingBuckets = AgingBucket[];
 
 export type MonthlyPnlPoint = {
   month: string;
@@ -945,7 +953,54 @@ export async function getMonthlyPnl({ months }: { months: number }): Promise<Mon
   return getMonthlyPnlCached(createFilterKey('analytics:get-monthly-pnl', { months }), months);
 }
 
-const getAgingBucketsCached = cache(async () => {
+function buildAgingBuckets(thresholds: [number, number, number]): AgingBucket[] {
+  const [first, second, third] = thresholds;
+  return [
+    {
+      key: `0-${first}`,
+      label: `0-${first}`,
+      minDays: 0,
+      maxDays: first,
+      count: 0,
+      totalT: 0,
+    },
+    {
+      key: `${first + 1}-${second}`,
+      label: `${first + 1}-${second}`,
+      minDays: first + 1,
+      maxDays: second,
+      count: 0,
+      totalT: 0,
+    },
+    {
+      key: `${second + 1}-${third}`,
+      label: `${second + 1}-${third}`,
+      minDays: second + 1,
+      maxDays: third,
+      count: 0,
+      totalT: 0,
+    },
+    {
+      key: `${third + 1}+`,
+      label: `${third + 1}+`,
+      minDays: third + 1,
+      maxDays: null,
+      count: 0,
+      totalT: 0,
+    },
+  ];
+}
+
+function findBucketIndex(age: number, thresholds: [number, number, number]): number {
+  const [first, second, third] = thresholds;
+  if (age <= first) return 0;
+  if (age <= second) return 1;
+  if (age <= third) return 2;
+  return 3;
+}
+
+export async function getAgingBuckets(): Promise<AgingBuckets> {
+  const businessRules = await getBusinessRulesSettings();
   const items = await prisma.item.findMany({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -958,41 +1013,35 @@ const getAgingBucketsCached = cache(async () => {
     },
   });
 
+  const thresholds = businessRules.agingThresholds;
+  const buckets = buildAgingBuckets(thresholds);
   const now = new Date();
-
-  const result: AgingBuckets = {
-    '0-30': { count: 0, totalT: 0 },
-    '31-90': { count: 0, totalT: 0 },
-    '91-180': { count: 0, totalT: 0 },
-    '181+': { count: 0, totalT: 0 },
-  };
 
   items.forEach((item) => {
     const age = differenceInCalendarDays(now, item.acquiredAt);
+    const bucketIndex = findBucketIndex(age, thresholds);
+    const bucket = buckets[bucketIndex];
+    if (!bucket) return;
     const cost = computeCost(item);
-    if (age <= 30) {
-      result['0-30'].count += 1;
-      result['0-30'].totalT += cost;
-    } else if (age <= 90) {
-      result['31-90'].count += 1;
-      result['31-90'].totalT += cost;
-    } else if (age <= 180) {
-      result['91-180'].count += 1;
-      result['91-180'].totalT += cost;
-    } else {
-      result['181+'].count += 1;
-      result['181+'].totalT += cost;
-    }
+    bucket.count += 1;
+    bucket.totalT += cost;
   });
 
-  return result;
-});
-
-export async function getAgingBuckets(): Promise<AgingBuckets> {
-  return getAgingBucketsCached();
+  return buckets;
 }
 
-const getAgingWatchlistCached = cache(async () => {
+export type AgingWatchlistSummary = {
+  thresholds: { warning: number; critical: number };
+  warning: WatchlistItem[];
+  critical: WatchlistItem[];
+};
+
+export async function getAgingWatchlist(): Promise<AgingWatchlistSummary> {
+  const businessRules = await getBusinessRulesSettings();
+  const thresholds = businessRules.agingThresholds;
+  const warningThreshold = thresholds[1] ?? thresholds[0];
+  const criticalThreshold = thresholds[2] ?? thresholds[1] ?? thresholds[0];
+
   const items = await prisma.item.findMany({
     where: {
       status: { in: ACTIVE_STATUSES },
@@ -1029,24 +1078,21 @@ const getAgingWatchlistCached = cache(async () => {
         costToman: computeCost(item),
         listedPriceToman: item.listedPriceToman,
         daysInStock: days,
-      };
+      } satisfies WatchlistItem;
     })
     .sort((a, b) => b.daysInStock - a.daysInStock);
 
-  const over90 = watchlist.filter((item) => item.daysInStock > 90).slice(0, 10);
-  const over180 = watchlist.filter((item) => item.daysInStock > 180).slice(0, 10);
+  const warning = watchlist.filter((item) => item.daysInStock > warningThreshold).slice(0, 10);
+  const critical = watchlist.filter((item) => item.daysInStock > criticalThreshold).slice(0, 10);
 
-  return { over90, over180 };
-});
-
-export async function getAgingWatchlist(): Promise<{
-  over90: WatchlistItem[];
-  over180: WatchlistItem[];
-}> {
-  return getAgingWatchlistCached();
+  return {
+    thresholds: { warning: warningThreshold, critical: criticalThreshold },
+    warning,
+    critical,
+  };
 }
 
-const getStaleListedCached = cache(async (_cacheKey: string, days: 30 | 60) => {
+export async function getStaleListed({ days }: { days: number }): Promise<StaleListedItem[]> {
   const now = new Date();
   const minDate = subDays(now, days);
 
@@ -1094,10 +1140,6 @@ const getStaleListedCached = cache(async (_cacheKey: string, days: 30 | 60) => {
       listedPriceToman: item.listedPriceToman,
       costToman: computeCost(item),
       daysListed,
-    };
+    } satisfies StaleListedItem;
   });
-});
-
-export async function getStaleListed({ days }: { days: 30 | 60 }): Promise<StaleListedItem[]> {
-  return getStaleListedCached(createFilterKey('analytics:get-stale-listed', { days }), days);
 }

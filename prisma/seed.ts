@@ -27,6 +27,7 @@ async function main() {
   await safeDelete('item');
   await safeDelete('product');
   await safeDelete('category');
+  await safeDelete('appSetting');
 
   // --- Categories (with simple tree) ---
   const categoriesData = [
@@ -325,7 +326,35 @@ async function main() {
     }
   } catch {/* ignore */}
 
-  console.log('✅ Seed completed with categories, products, items (>50), inventory movements, and sample sales/purchases (if supported).');
+  const defaultSettings = {
+    general: {
+      businessName: 'CoreX Inventory',
+      defaultChannel: Channel.DIRECT,
+      defaultItemCondition: ItemCondition.USED,
+    },
+    display: {
+      locale: 'fa',
+      rtlPreference: 'auto',
+    },
+    businessRules: {
+      agingThresholds: [30, 90, 180],
+      minimumMarginAlertPercent: 20,
+      staleListingThresholds: {
+        warning: 30,
+        critical: 60,
+      },
+    },
+  } as const;
+
+  try {
+    await anyPrisma.appSetting.upsert({
+      where: { key: 'app.settings' },
+      update: { value: defaultSettings },
+      create: { key: 'app.settings', value: defaultSettings },
+    });
+  } catch {/* ignore */}
+
+  console.log('✅ Seed completed with categories, products, items (>50), inventory movements, sample sales/purchases, and default settings (if supported).');
 }
 
 main()

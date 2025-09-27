@@ -12,6 +12,7 @@ import {
   getReportsAggregates,
   serializeFilters,
 } from '../../../../lib/reporting-data';
+import { getBusinessRulesSettings } from '../../../../lib/settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,7 +79,8 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const defaults = defaultFilters();
   const { channels, categories } = getAvailableFilters();
   const filters = buildFilters(resolvedParams, defaults, channels, categories);
-  const aggregates = getReportsAggregates(filters);
+  const businessRules = await getBusinessRulesSettings();
+  const aggregates = getReportsAggregates(filters, businessRules);
   const serialized: SerializedFilters = serializeFilters(filters);
 
   return (

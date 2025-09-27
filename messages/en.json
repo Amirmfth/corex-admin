@@ -9,6 +9,108 @@
     "settings": "Settings",
     "purchases": "Purchases"
   },
+  "settings": {
+    "title": "Workspace settings",
+    "subtitle": "Configure defaults, presentation, and operational rules.",
+    "tabs": {
+      "general": "General",
+      "display": "Display",
+      "rules": "Business rules",
+      "data": "Data"
+    },
+    "general": {
+      "businessName": {
+        "label": "Business name",
+        "placeholder": "CoreX",
+        "description": "Shown on exports and shared dashboards."
+      },
+      "defaultChannel": {
+        "label": "Default channel",
+        "placeholder": "Select channel",
+        "description": "Applied when logging purchases and sales."
+      },
+      "defaultCondition": {
+        "label": "Default item condition",
+        "placeholder": "Select condition",
+        "description": "Preselects the item condition for new entries."
+      }
+    },
+    "display": {
+      "locale": {
+        "label": "Default locale",
+        "placeholder": "Select locale",
+        "description": "Controls language, dates, and number formatting."
+      },
+      "rtl": {
+        "label": "Right-to-left layout",
+        "on": "Enabled",
+        "off": "Disabled",
+        "description": "Automatically enabled for Persian."
+      },
+      "currency": {
+        "label": "Currency",
+        "value": "Toman",
+        "description": "Values are stored as integers for accuracy."
+      },
+      "numberPreview": {
+        "label": "Number formatting preview"
+      }
+    },
+    "rules": {
+      "agingThresholds": {
+        "label": "Aging thresholds (days)",
+        "description": "Used for dashboard watchlists and report buckets.",
+        "labels": {
+          "0": "First threshold",
+          "1": "Second threshold",
+          "2": "Critical threshold"
+        }
+      },
+      "minimumMargin": {
+        "label": "Minimum margin alert (%)",
+        "description": "Flag sales that fall below the desired profit margin."
+      },
+      "staleThresholds": {
+        "label": "Stale listing thresholds (days)",
+        "description": "Controls when listed items appear in the stale queue.",
+        "warning": "Warning threshold",
+        "critical": "Critical threshold"
+      }
+    },
+    "data": {
+      "description": "Export or import operational data for external analysis.",
+      "helper": "Exports open in a new tab as JSON files.",
+      "exports": {
+        "reports": "Export reports",
+        "inventory": "Export inventory"
+      },
+      "import": {
+        "label": "Import products"
+      }
+    },
+    "actions": {
+      "reset": "Reset",
+      "save": "Save changes",
+      "saving": "Saving..."
+    },
+    "feedback": {
+      "saveSuccess": "Settings saved",
+      "saveError": "Unable to save settings",
+      "invalid": "Please fix the highlighted fields."
+    },
+    "options": {
+      "channels": {
+        "DIRECT": "Direct",
+        "ONLINE": "Online",
+        "WHOLESALE": "Wholesale",
+        "OTHER": "Other"
+      },
+      "locales": {
+        "fa": "Persian (fa)",
+        "en": "English (en)"
+      }
+    }
+  },
   "dashboard": {
     "title": "Operations dashboard",
     "subtitle": "Track revenue, inventory health, and next actions.",
@@ -42,14 +144,14 @@
       "ageLabel": "{count} days",
       "aging": {
         "title": "Aging watchlist",
-        "description": "{over90} items older than 90 days · {over180} beyond 180",
-        "badge180": "180+ days",
+        "description": "{warningCount} items older than {warningDays} days · {criticalCount} beyond {criticalDays}",
+        "badgeCritical": "{days}+ days",
         "empty": "No aging risk items."
       },
       "stale": {
         "title": "Listed but stale",
-        "description": "{over30} listings older than 30 days · {over60} past 60",
-        "badge60": "60+ days",
+        "description": "{warningCount} listings older than {warningDays} days · {criticalCount} past {criticalDays}",
+        "badgeCritical": "{days}+ days",
         "empty": "No stale listings."
       }
     }

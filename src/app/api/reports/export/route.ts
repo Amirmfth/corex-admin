@@ -7,6 +7,7 @@ import {
   getReportsAggregates,
   serializeFilters,
 } from '../../../../../lib/reporting-data';
+import { getBusinessRulesSettings } from '../../../../../lib/settings';
 
 function parseChannels(params: URLSearchParams, available: ReportChannel[]): ReportChannel[] {
   const allowed = new Set<ReportChannel>(available);
@@ -36,7 +37,8 @@ export async function GET(request: Request) {
     category: categoryParam?.trim() ? categoryParam : null,
   } as const;
 
-  const aggregates = getReportsAggregates(filters);
+  const businessRules = await getBusinessRulesSettings();
+  const aggregates = getReportsAggregates(filters, businessRules);
 
   return NextResponse.json({ filters: serializeFilters(filters), aggregates });
 }

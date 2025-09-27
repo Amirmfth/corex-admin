@@ -34,11 +34,7 @@ export default async function KpiSection({ locale }: KpiSectionProps) {
   const currencyFormatter = getCurrencyFormatter(locale);
   const monthToDateLabel = getMonthToDateLabel(locale);
 
-  const activeCount =
-    agingBuckets['0-30'].count +
-    agingBuckets['31-90'].count +
-    agingBuckets['91-180'].count +
-    agingBuckets['181+'].count;
+  const activeCount = agingBuckets.reduce((sum, bucket) => sum + bucket.count, 0);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -21,7 +21,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "lucide-react": ["./lib/icons/lucide-react"],
-      "recharts": ["./src/lib/recharts"]
+      "recharts": ["./src/lib/recharts"],
+      "react-hook-form": ["./src/lib/react-hook-form"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -7,3 +7,4 @@ export * from "./slug";
 export * from "./category-path";
 export * from "./validation.product";
 export * from "./validation.category";
+export * from "./settings";

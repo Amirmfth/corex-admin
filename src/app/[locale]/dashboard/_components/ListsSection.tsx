@@ -9,6 +9,7 @@ import {
   getAgingWatchlist,
   getStaleListed,
 } from '../../../../../lib/analytics';
+import { getBusinessRulesSettings } from '../../../../../lib/settings';
 import { getNumberFormatter } from '../utils';
 
 interface ListsSectionProps {
@@ -19,20 +20,30 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
   const t = await getTranslations({ locale, namespace: 'dashboard' });
   const numberFormatter = getNumberFormatter(locale);
 
-  const [agingBuckets, agingWatchlist, stale30, stale60] = await Promise.all([
+  const businessRules = await getBusinessRulesSettings();
+  const [agingBuckets, agingWatchlist, staleWarning, staleCritical] = await Promise.all([
     getAgingBuckets(),
     getAgingWatchlist(),
-    getStaleListed({ days: 30 }),
-    getStaleListed({ days: 60 }),
+    getStaleListed({ days: businessRules.staleListingThresholds.warning }),
+    getStaleListed({ days: businessRules.staleListingThresholds.critical }),
   ]);
 
-  const agingOver90Count = agingBuckets['91-180'].count + agingBuckets['181+'].count;
-  const agingOver180Count = agingBuckets['181+'].count;
+  const agingWarningThreshold = agingWatchlist.thresholds.warning;
+  const agingCriticalThreshold = agingWatchlist.thresholds.critical;
 
-  const staleOver30Count = stale30.length;
-  const staleOver60Count = stale60.length;
+  const agingOverWarningCount = agingBuckets
+    .filter((bucket) => bucket.minDays > agingWarningThreshold)
+    .reduce((sum, bucket) => sum + bucket.count, 0);
+  const agingOverCriticalCount = agingBuckets
+    .filter((bucket) => bucket.minDays > agingCriticalThreshold)
+    .reduce((sum, bucket) => sum + bucket.count, 0);
 
-  const agingItems = agingWatchlist.over90.map((item) => ({
+  const staleWarningThreshold = businessRules.staleListingThresholds.warning;
+  const staleCriticalThreshold = businessRules.staleListingThresholds.critical;
+  const staleOverWarningCount = staleWarning.length;
+  const staleOverCriticalCount = staleCritical.length;
+
+  const agingItems = agingWatchlist.warning.map((item) => ({
     id: item.id,
     productName: item.productName,
     serial: item.serial,
@@ -41,7 +52,7 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
     listedPriceToman: item.listedPriceToman,
   }));
 
-  const staleItems = stale30.map((item) => ({
+  const staleItems = staleWarning.map((item) => ({
     id: item.id,
     productName: item.productName,
     serial: item.serial,
@@ -66,30 +77,46 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
         locale={locale}
         title={t('lists.aging.title')}
         description={t('lists.aging.description', {
-          over90: numberFormatter.format(agingOver90Count),
-          over180: numberFormatter.format(agingOver180Count),
+          warningCount: numberFormatter.format(agingOverWarningCount),
+          warningDays: numberFormatter.format(agingWarningThreshold),
+          criticalCount: numberFormatter.format(agingOverCriticalCount),
+          criticalDays: numberFormatter.format(agingCriticalThreshold),
         })}
         emptyLabel={t('lists.aging.empty')}
         items={agingItems}
         headers={listHeaders}
         formatAge={ageFormatter}
         renderBadge={(item) =>
-          item.ageDays >= 180 ? <Badge variant="warning">{t('lists.aging.badge180')}</Badge> : null
+          item.ageDays > agingCriticalThreshold ? (
+            <Badge variant="warning">
+              {t('lists.aging.badgeCritical', {
+                days: numberFormatter.format(agingCriticalThreshold),
+              })}
+            </Badge>
+          ) : null
         }
       />
       <ItemListPanel
         locale={locale}
         title={t('lists.stale.title')}
         description={t('lists.stale.description', {
-          over30: numberFormatter.format(staleOver30Count),
-          over60: numberFormatter.format(staleOver60Count),
+          warningCount: numberFormatter.format(staleOverWarningCount),
+          warningDays: numberFormatter.format(staleWarningThreshold),
+          criticalCount: numberFormatter.format(staleOverCriticalCount),
+          criticalDays: numberFormatter.format(staleCriticalThreshold),
         })}
         emptyLabel={t('lists.stale.empty')}
         items={staleItems}
         headers={listHeaders}
         formatAge={ageFormatter}
         renderBadge={(item) =>
-          item.ageDays >= 60 ? <Badge variant="warning">{t('lists.stale.badge60')}</Badge> : null
+          item.ageDays > staleCriticalThreshold ? (
+            <Badge variant="warning">
+              {t('lists.stale.badgeCritical', {
+                days: numberFormatter.format(staleCriticalThreshold),
+              })}
+            </Badge>
+          ) : null
         }
       />
     </div>
