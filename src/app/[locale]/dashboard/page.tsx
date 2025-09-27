@@ -8,10 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import type { AppLocale } from '../../../../i18n/routing';
 import { getMonthlyPnl } from '../../../../lib/analytics';
 
+import AlertsSection from './_components/AlertsSection';
 import ChartsSection from './_components/ChartsSection';
 import KpiSection from './_components/KpiSection';
 import ListsSection from './_components/ListsSection';
 import {
+  AlertsSectionSkeleton,
   ChartsSectionSkeleton,
   KpiSectionSkeleton,
   ListsSectionSkeleton,
@@ -38,6 +40,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   return (
     <section className="flex flex-col gap-6">
       <PageHeader title={t('title')} description={t('subtitle')} />
+
+      <Suspense fallback={<AlertsSectionSkeleton />}>
+        <AlertsSection locale={typedLocale} />
+      </Suspense>
 
       <Suspense fallback={<KpiSectionSkeleton />}>
         <KpiSection locale={typedLocale} />

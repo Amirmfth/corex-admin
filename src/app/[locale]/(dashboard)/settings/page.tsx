@@ -76,6 +76,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
               <h3 className="text-sm font-semibold text-[var(--muted-strong)]">{t('data.export.title')}</h3>
               <p className="text-xs text-[var(--muted)]">{t('data.export.description')}</p>
               <div className="mt-4 flex flex-wrap gap-2">
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a
                   href="/api/reports/export"
                   className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
@@ -87,6 +88,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
               <h3 className="text-sm font-semibold text-[var(--muted-strong)]">{t('data.import.title')}</h3>
               <p className="text-xs text-[var(--muted)]">{t('data.import.description')}</p>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/products/import"
                 className="mt-4 inline-flex items-center justify-center rounded-full border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"

@@ -31,6 +31,47 @@
       "cost": "Cost",
       "profit": "Profit"
     },
+    "alerts": {
+      "title": "Alerts",
+      "subtitle": "Surface the items that need attention.",
+      "empty": "No alerts. Great job!",
+      "aging": {
+        "title": "Aging risk",
+        "count": "{count} items past {threshold} days",
+        "item": "{days} days in stock",
+        "empty": "No items beyond the aging threshold."
+      },
+      "stale": {
+        "title": "Stale listings",
+        "count": "{count} listings older than {threshold} days",
+        "item": "{days} days listed",
+        "empty": "No stale listings."
+      },
+      "margin": {
+        "title": "Low margin sales",
+        "count": "{count} sales below {threshold}% margin",
+        "item": "{percent}% margin",
+        "empty": "No low margin sales."
+      },
+      "actions": {
+        "adjust": "Relist / Adjust Price",
+        "open": "Open Item"
+      },
+      "quickEdit": {
+        "title": "Adjust listing",
+        "subtitle": "Update pricing and status for {name}.",
+        "status": "Status",
+        "listedPrice": "Listed price",
+        "listedChannel": "Listed channel",
+        "saleChannel": "Sale channel",
+        "soldPrice": "Sold price",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "success": "Item updated",
+        "error": "Unable to update item",
+        "soldPriceRequired": "Sold price required when marking an item as sold"
+      }
+    },
     "lists": {
       "headers": {
         "product": "Product",
