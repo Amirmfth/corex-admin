@@ -1,0 +1,5 @@
+CREATE TABLE "AppSetting" (
+    "key" TEXT PRIMARY KEY,
+    "value" JSONB NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

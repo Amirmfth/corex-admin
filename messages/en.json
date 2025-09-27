@@ -42,15 +42,121 @@
       "ageLabel": "{count} days",
       "aging": {
         "title": "Aging watchlist",
-        "description": "{over90} items older than 90 days · {over180} beyond 180",
-        "badge180": "180+ days",
+        "description": "{warningCount} items beyond {warningDays} days · {criticalCount} past {criticalDays}",
+        "criticalBadge": ">{days} days",
         "empty": "No aging risk items."
       },
       "stale": {
         "title": "Listed but stale",
-        "description": "{over30} listings older than 30 days · {over60} past 60",
-        "badge60": "60+ days",
-        "empty": "No stale listings."
+        "description": "{primaryCount} listings older than {primaryDays} days · {secondaryCount} past {secondaryDays}",
+      "criticalBadge": ">{days} days",
+      "empty": "No stale listings."
+      }
+    }
+  },
+  "settings": {
+    "title": "Workspace settings",
+    "description": "Update defaults, localization, and business rules for your team.",
+    "tabs": {
+      "general": "General",
+      "display": "Display",
+      "rules": "Business rules",
+      "data": "Data"
+    },
+    "general": {
+      "title": "General preferences",
+      "subtitle": "Set your brand name and default entry options.",
+      "businessName": {
+        "label": "Business name",
+        "help": "Shown in the sidebar and navigation."
+      },
+      "defaultChannel": {
+        "label": "Default channel",
+        "help": "Used when creating new purchases or sales.",
+        "placeholder": "Select a channel",
+        "options": {
+          "direct": "Direct",
+          "online": "Online",
+          "wholesale": "Wholesale",
+          "other": "Other"
+        }
+      },
+      "defaultCondition": {
+        "label": "Default item condition",
+        "help": "Applied to quick add flows.",
+        "placeholder": "Select a condition",
+        "options": {
+          "new": "New",
+          "used": "Used",
+          "for_parts": "For parts"
+        }
+      },
+      "submit": "Save general settings",
+      "success": "General settings saved",
+      "error": "Unable to save general settings"
+    },
+    "display": {
+      "title": "Display preferences",
+      "subtitle": "Control locale defaults and currency formatting.",
+      "locale": {
+        "label": "Locale",
+        "help": "Choose the default locale for formatting and charts.",
+        "placeholder": "Select a locale",
+        "fa": "Persian (fa)",
+        "en": "English (en)"
+      },
+      "rtl": {
+        "label": "Right-to-left layout",
+        "help": "Toggle interface direction. Persian defaults to RTL automatically.",
+        "on": "RTL enabled",
+        "off": "RTL disabled"
+      },
+      "currency": {
+        "label": "Currency",
+        "value": "Toman",
+        "help": "All monetary values are stored as whole Tomans."
+      },
+      "numberPreview": {
+        "label": "Number formatting preview"
+      },
+      "currencyPreview": "Example amount: {currency}",
+      "submit": "Save display settings",
+      "success": "Display settings saved",
+      "error": "Unable to save display settings"
+    },
+    "business": {
+      "title": "Business rules",
+      "subtitle": "Adjust alerts that feed dashboards and reports.",
+      "agingThresholds": {
+        "label": "Aging thresholds (days)",
+        "help": "Buckets used for watchlists and reports. Values must increase.",
+        "item": "Threshold {index}"
+      },
+      "minimumMargin": {
+        "label": "Minimum margin alert",
+        "help": "Flag sales below this margin percentage."
+      },
+      "staleThreshold": {
+        "label": "Stale listing threshold",
+        "help": "Listings older than this trigger stale alerts.",
+        "unit": "days"
+      },
+      "submit": "Save business rules",
+      "success": "Business rules updated",
+      "error": "Unable to save business rules"
+    },
+    "data": {
+      "title": "Data & exports",
+      "subtitle": "Download reports or move data between systems.",
+      "export": {
+        "title": "Exports",
+        "description": "Download the current analytics snapshot as JSON.",
+        "json": "Download reports JSON"
+      },
+      "import": {
+        "title": "Import products",
+        "description": "Upload a CSV of products to seed your catalog.",
+        "link": "Go to import"
       }
     }
   },
@@ -353,7 +459,8 @@
       "listingFunnel": "Listing funnel",
       "agingHistogram": "Aging histogram",
       "repairRoi": "Repair ROI",
-      "priceVsMargin": "Price vs margin"
+      "priceVsMargin": "Price vs margin",
+      "priceVsMarginThreshold": "Alert below {value}% margin"
     },
     "tables": {
       "channel": "Channel",

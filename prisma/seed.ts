@@ -27,6 +27,7 @@ async function main() {
   await safeDelete('item');
   await safeDelete('product');
   await safeDelete('category');
+  await safeDelete('appSetting');
 
   // --- Categories (with simple tree) ---
   const categoriesData = [
@@ -325,7 +326,42 @@ async function main() {
     }
   } catch {/* ignore */}
 
-  console.log('✅ Seed completed with categories, products, items (>50), inventory movements, and sample sales/purchases (if supported).');
+  const defaultSettings = {
+    general: {
+      businessName: 'CoreX',
+      defaultChannel: Channel.DIRECT,
+      defaultCondition: ItemCondition.USED,
+    },
+    display: {
+      locale: 'fa' as const,
+      rtl: true,
+    },
+    businessRules: {
+      agingThresholds: [30, 90, 180] as const,
+      minimumMarginPercent: 15,
+      staleListingThresholdDays: 30,
+    },
+  };
+
+  await Promise.all([
+    prisma.appSetting.upsert({
+      where: { key: 'general' },
+      update: { value: defaultSettings.general },
+      create: { key: 'general', value: defaultSettings.general },
+    }),
+    prisma.appSetting.upsert({
+      where: { key: 'display' },
+      update: { value: defaultSettings.display },
+      create: { key: 'display', value: defaultSettings.display },
+    }),
+    prisma.appSetting.upsert({
+      where: { key: 'businessRules' },
+      update: { value: defaultSettings.businessRules },
+      create: { key: 'businessRules', value: defaultSettings.businessRules },
+    }),
+  ]);
+
+  console.log('✅ Seed completed with categories, products, items (>50), inventory movements, sample sales/purchases, and default settings.');
 }
 
 main()

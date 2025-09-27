@@ -9,6 +9,7 @@ import {
   getAgingWatchlist,
   getStaleListed,
 } from '../../../../../lib/analytics';
+import { getBusinessRulesSettings } from '@/lib/app-settings';
 import { getNumberFormatter } from '../utils';
 
 interface ListsSectionProps {
@@ -19,20 +20,28 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
   const t = await getTranslations({ locale, namespace: 'dashboard' });
   const numberFormatter = getNumberFormatter(locale);
 
-  const [agingBuckets, agingWatchlist, stale30, stale60] = await Promise.all([
+  const businessRules = await getBusinessRulesSettings();
+  const primaryStaleThreshold = businessRules.staleListingThresholdDays;
+  const secondaryStaleThreshold = businessRules.staleListingThresholdDays * 2;
+
+  const [agingSummary, agingWatchlist, stalePrimary, staleSecondary] = await Promise.all([
     getAgingBuckets(),
     getAgingWatchlist(),
-    getStaleListed({ days: 30 }),
-    getStaleListed({ days: 60 }),
+    getStaleListed({ days: primaryStaleThreshold }),
+    getStaleListed({ days: secondaryStaleThreshold }),
   ]);
 
-  const agingOver90Count = agingBuckets['91-180'].count + agingBuckets['181+'].count;
-  const agingOver180Count = agingBuckets['181+'].count;
+  const agingWarningCount = agingSummary.buckets
+    .filter((bucket) => bucket.rangeStart > agingWatchlist.warningThreshold)
+    .reduce((total, bucket) => total + bucket.count, 0);
+  const agingCriticalCount = agingSummary.buckets
+    .filter((bucket) => bucket.rangeStart > agingWatchlist.criticalThreshold)
+    .reduce((total, bucket) => total + bucket.count, 0);
 
-  const staleOver30Count = stale30.length;
-  const staleOver60Count = stale60.length;
+  const stalePrimaryCount = stalePrimary.length;
+  const staleSecondaryCount = staleSecondary.length;
 
-  const agingItems = agingWatchlist.over90.map((item) => ({
+  const agingItems = agingWatchlist.warning.map((item) => ({
     id: item.id,
     productName: item.productName,
     serial: item.serial,
@@ -41,7 +50,7 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
     listedPriceToman: item.listedPriceToman,
   }));
 
-  const staleItems = stale30.map((item) => ({
+  const staleItems = stalePrimary.map((item) => ({
     id: item.id,
     productName: item.productName,
     serial: item.serial,
@@ -66,30 +75,46 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
         locale={locale}
         title={t('lists.aging.title')}
         description={t('lists.aging.description', {
-          over90: numberFormatter.format(agingOver90Count),
-          over180: numberFormatter.format(agingOver180Count),
+          warningCount: numberFormatter.format(agingWarningCount),
+          warningDays: numberFormatter.format(agingWatchlist.warningThreshold),
+          criticalCount: numberFormatter.format(agingCriticalCount),
+          criticalDays: numberFormatter.format(agingWatchlist.criticalThreshold),
         })}
         emptyLabel={t('lists.aging.empty')}
         items={agingItems}
         headers={listHeaders}
         formatAge={ageFormatter}
         renderBadge={(item) =>
-          item.ageDays >= 180 ? <Badge variant="warning">{t('lists.aging.badge180')}</Badge> : null
+          item.ageDays > agingWatchlist.criticalThreshold ? (
+            <Badge variant="warning">
+              {t('lists.aging.criticalBadge', {
+                days: numberFormatter.format(agingWatchlist.criticalThreshold),
+              })}
+            </Badge>
+          ) : null
         }
       />
       <ItemListPanel
         locale={locale}
         title={t('lists.stale.title')}
         description={t('lists.stale.description', {
-          over30: numberFormatter.format(staleOver30Count),
-          over60: numberFormatter.format(staleOver60Count),
+          primaryCount: numberFormatter.format(stalePrimaryCount),
+          primaryDays: numberFormatter.format(primaryStaleThreshold),
+          secondaryCount: numberFormatter.format(staleSecondaryCount),
+          secondaryDays: numberFormatter.format(secondaryStaleThreshold),
         })}
         emptyLabel={t('lists.stale.empty')}
         items={staleItems}
         headers={listHeaders}
         formatAge={ageFormatter}
         renderBadge={(item) =>
-          item.ageDays >= 60 ? <Badge variant="warning">{t('lists.stale.badge60')}</Badge> : null
+          item.ageDays >= secondaryStaleThreshold ? (
+            <Badge variant="warning">
+              {t('lists.stale.criticalBadge', {
+                days: numberFormatter.format(secondaryStaleThreshold),
+              })}
+            </Badge>
+          ) : null
         }
       />
     </div>

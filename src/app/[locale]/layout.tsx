@@ -7,12 +7,11 @@ import { Toaster } from 'sonner';
 
 import MobileNav from '@/components/MobileNav';
 import Sidebar from '@/components/Sidebar';
+import { getDisplaySettings, getGeneralSettings } from '@/lib/app-settings';
 
 import { AppLocale, routing } from '../../../i18n/routing';
 
 // ---- Basic helpers ----
-const isRTL = (locale: AppLocale) => locale === 'fa' || locale === 'en';
-
 const NAV_BASE = [
   { key: 'dashboard', href: '/' },
   { key: 'items', href: '/items' },
@@ -44,13 +43,15 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const normalizedLocale = locale as AppLocale;
   setRequestLocale(normalizedLocale);
 
-  const [messages, tNav] = await Promise.all([
+  const [messages, tNav, generalSettings, displaySettings] = await Promise.all([
     getMessages({ locale: normalizedLocale }),
     getTranslations({ locale: normalizedLocale, namespace: 'navigation' }),
+    getGeneralSettings(),
+    getDisplaySettings(),
   ]);
 
-  const dir: 'ltr' | 'rtl' = isRTL(normalizedLocale) ? 'rtl' : 'ltr';
-  const brandLabel = 'CoreX'; // tweak if you want a FA label
+  const dir: 'ltr' | 'rtl' = displaySettings.rtl ? 'rtl' : 'ltr';
+  const brandLabel = generalSettings.businessName || 'CoreX';
 
   // Build client-safe nav items (iconId as string)
   const mobileNav = NAV_BASE.map(({ key, href }) => ({

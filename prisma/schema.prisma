@@ -160,3 +160,10 @@ model InventoryMovement {
   notes     String?
   createdAt DateTime     @default(now())
 }
+
+model AppSetting {
+  key   String @id
+  value Json
+  /** Tracks last update to invalidate caches */
+  updatedAt DateTime @updatedAt
+}

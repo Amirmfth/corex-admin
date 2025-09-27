@@ -78,7 +78,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const defaults = defaultFilters();
   const { channels, categories } = getAvailableFilters();
   const filters = buildFilters(resolvedParams, defaults, channels, categories);
-  const aggregates = getReportsAggregates(filters);
+  const aggregates = await getReportsAggregates(filters);
   const serialized: SerializedFilters = serializeFilters(filters);
 
   return (

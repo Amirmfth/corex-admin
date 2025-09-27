@@ -22,7 +22,7 @@ interface KpiSectionProps {
 
 export default async function KpiSection({ locale }: KpiSectionProps) {
   const t = await getTranslations({ locale, namespace: 'dashboard' });
-  const [inventoryValue, profitMTD, itemsInStock, avgDaysInStock, agingBuckets] = await Promise.all([
+  const [inventoryValue, profitMTD, itemsInStock, avgDaysInStock, agingSummary] = await Promise.all([
     getInventoryValue(),
     getProfitMTD(),
     getItemsInStockCount(),
@@ -34,11 +34,7 @@ export default async function KpiSection({ locale }: KpiSectionProps) {
   const currencyFormatter = getCurrencyFormatter(locale);
   const monthToDateLabel = getMonthToDateLabel(locale);
 
-  const activeCount =
-    agingBuckets['0-30'].count +
-    agingBuckets['31-90'].count +
-    agingBuckets['91-180'].count +
-    agingBuckets['181+'].count;
+  const activeCount = agingSummary.buckets.reduce((total, bucket) => total + bucket.count, 0);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
