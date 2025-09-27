@@ -9,6 +9,51 @@
     "settings": "Settings",
     "purchases": "Purchases"
   },
+  "dashboard": {
+    "title": "Operations dashboard",
+    "subtitle": "Track revenue, inventory health, and next actions.",
+    "kpi": {
+      "inventoryValue": "Inventory value",
+      "inventoryHelper": "{count} active items",
+      "profitMtd": "MTD profit",
+      "profitHelper": "{month} month to date",
+      "itemsInStock": "Items in stock",
+      "itemsInStockHelper": "Ready to sell",
+      "avgDays": "Avg days in stock",
+      "avgDaysHelper": "Across active statuses"
+    },
+    "charts": {
+      "profitTitle": "Profit (last 12 months)",
+      "profitValue": "Profit",
+      "pnlTitle": "Revenue vs cost vs profit",
+      "valueLabel": "Value",
+      "revenue": "Revenue",
+      "cost": "Cost",
+      "profit": "Profit"
+    },
+    "lists": {
+      "headers": {
+        "product": "Product",
+        "serial": "Serial",
+        "age": "Age",
+        "cost": "Cost",
+        "price": "Listed price"
+      },
+      "ageLabel": "{count} days",
+      "aging": {
+        "title": "Aging watchlist",
+        "description": "{over90} items older than 90 days · {over180} beyond 180",
+        "badge180": "180+ days",
+        "empty": "No aging risk items."
+      },
+      "stale": {
+        "title": "Listed but stale",
+        "description": "{over30} listings older than 30 days · {over60} past 60",
+        "badge60": "60+ days",
+        "empty": "No stale listings."
+      }
+    }
+  },
   "table": {
     "product": "Product",
     "serial": "Serial",
