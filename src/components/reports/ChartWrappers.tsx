@@ -18,11 +18,8 @@ import {
   Scatter,
   ScatterChart as RechartsScatterChart,
   Tooltip,
-  TooltipProps,
   XAxis,
-  XAxisProps,
   YAxis,
-  YAxisProps,
 } from 'recharts';
 
 import { formatToman } from '../../../lib/money';
@@ -149,5 +146,6 @@ export {
   Legend,
   LabelList,
   XAxis,
+  YAxis,
   Tooltip,
 };

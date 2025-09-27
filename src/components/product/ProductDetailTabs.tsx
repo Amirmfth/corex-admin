@@ -67,12 +67,12 @@ export default function ProductDetailTabs({ product, items, soldItems, locale }:
         <table className="min-w-full divide-y divide-[var(--border)] text-sm">
           <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
             <tr>
-              <th className="px-4 py-3 text-left font-medium">{tTable("serial")}</th>
-              <th className="px-4 py-3 text-left font-medium">{tTable("condition")}</th>
-              <th className="px-4 py-3 text-left font-medium">{tTable("status")}</th>
-              <th className="px-4 py-3 text-left font-medium">{tTable("cost")}</th>
-              <th className="px-4 py-3 text-left font-medium">{tDetail("listedPrice")}</th>
-              <th className="px-4 py-3 text-left font-medium">{tDetail("soldPrice")}</th>
+              <th className="px-4 py-3 text-right font-medium">{tTable("serial")}</th>
+              <th className="px-4 py-3 text-right font-medium">{tTable("condition")}</th>
+              <th className="px-4 py-3 text-right font-medium">{tTable("status")}</th>
+              <th className="px-4 py-3 text-right font-medium">{tTable("cost")}</th>
+              <th className="px-4 py-3 text-right font-medium">{tDetail("listedPrice")}</th>
+              <th className="px-4 py-3 text-right font-medium">{tDetail("soldPrice")}</th>
               <th className="px-4 py-3 text-right font-medium">{tTable("actions")}</th>
             </tr>
           </thead>
@@ -165,8 +165,8 @@ export default function ProductDetailTabs({ product, items, soldItems, locale }:
           <table className="min-w-full divide-y divide-[var(--border)] text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
               <tr>
-                <th className="px-4 py-3 text-left font-medium">{tDetail("soldDate")}</th>
-                <th className="px-4 py-3 text-left font-medium">{tDetail("soldPrice")}</th>
+                <th className="px-4 py-3 text-right font-medium">{tDetail("soldDate")}</th>
+                <th className="px-4 py-3 text-right font-medium">{tDetail("soldPrice")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">

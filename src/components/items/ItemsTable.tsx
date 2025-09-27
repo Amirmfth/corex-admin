@@ -8,7 +8,6 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-
 import type { AppLocale } from '../../../i18n/routing';
 import { totalCost } from '../../../lib/calc';
 import type { ItemsListItem } from '../../../lib/items';
@@ -220,7 +219,7 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
                   </td>
                   <td className="px-4 py-3 font-medium text-[var(--foreground)]">
                     <div className="flex flex-col">
-                      <span>{item.product.name}</span>
+                      <Link href={`/${locale}/items/${item.id}`}>{item.product.name}</Link>
                       {productMeta ? (
                         <span className="text-xs text-[var(--muted)]">{productMeta}</span>
                       ) : null}
@@ -252,12 +251,12 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
                   <td className="px-4 py-3 text-[var(--muted-strong)]">{item.location ?? '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      <Link
+                      {/* <Link
                         href={`/${locale}/items/${item.id}`}
                         className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)]"
                       >
                         {tButtons('edit')}
-                      </Link>
+                      </Link> */}
                       <button
                         type="button"
                         onClick={() => handleListToggle(item)}

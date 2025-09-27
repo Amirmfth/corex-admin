@@ -106,7 +106,7 @@ export default function FilterBar({
 
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
             {tFilters('dateRange')}
