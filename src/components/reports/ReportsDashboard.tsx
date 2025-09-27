@@ -145,6 +145,23 @@ export default function ReportsDashboard({
   const tTables = useTranslations('reportsDashboard.tables');
   const tFilters = useTranslations('reportsDashboard.filters');
   const intlLocale = locale === 'fa' ? 'fa-IR' : 'en-US';
+  const minimumMarginPercent = data.meta.minimumMarginPercent;
+  const minimumMarginLabel = useMemo(
+    () =>
+      new Intl.NumberFormat(intlLocale, {
+        maximumFractionDigits: 1,
+      }).format(minimumMarginPercent),
+    [intlLocale, minimumMarginPercent],
+  );
+  const renderMarginPoint = useCallback(
+    (props: any) => {
+      const { cx, cy, payload } = props;
+      const point = payload as PriceMarginPoint;
+      const fill = point.isBelowMinimumMargin ? '#f97316' : '#0ea5e9';
+      return <circle cx={cx} cy={cy} r={5} fill={fill} stroke="var(--surface)" strokeWidth={1.5} />;
+    },
+    [],
+  );
 
   const channelPieData = useMemo(
     () =>
@@ -729,12 +746,15 @@ export default function ReportsDashboard({
                     />
                     <Scatter
                       data={data.priceVsMargin}
-                      fill="#ef4444"
+                      shape={renderMarginPoint}
                       onClick={({ payload }) => handleScatterClick(payload as PriceMarginPoint)}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                {tCharts('priceVsMarginThreshold', { value: minimumMarginLabel })}
+              </p>
             </div>
           </div>
         </div>

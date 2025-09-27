@@ -1,8 +1,8 @@
-﻿import { ItemStatus } from '@prisma/client';
-import { endOfMonth, startOfMonth, subMonths } from "date-fns";
+import { ItemStatus } from '@prisma/client';
+import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
 
-
-import { prisma } from "./prisma";
+import { buildAgingBucketDefinitions, getBusinessRulesSettings } from '@/lib/app-settings';
+import { prisma } from './prisma';
 
 export type InventorySummary = {
   totalCost: number;
@@ -16,6 +16,8 @@ export type MonthlyProfitPoint = {
 
 export type AgingBucket = {
   label: string;
+  minDays: number;
+  maxDays: number | null;
   count: number;
   totalCost: number;
 };
@@ -101,30 +103,29 @@ export async function getMonthlyProfit(): Promise<MonthlyProfitPoint[]> {
   );
 }
 
-const AGING_BUCKETS: { label: string; min: number; max: number | null }[] = [
-  { label: "0-30", min: 0, max: 30 },
-  { label: "31-90", min: 31, max: 90 },
-  { label: "91-180", min: 91, max: 180 },
-  { label: "181+", min: 181, max: null },
-];
-
 export async function getAgingBuckets(): Promise<AgingBucket[]> {
-  const items = await prisma.item.findMany({
-    where: {
-      status: { in: ACTIVE_STATUSES },
-    },
-    select: {
-      acquiredAt: true,
-      purchaseToman: true,
-      feesToman: true,
-      refurbToman: true,
-    },
-  });
+  const [rules, items] = await Promise.all([
+    getBusinessRulesSettings(),
+    prisma.item.findMany({
+      where: {
+        status: { in: ACTIVE_STATUSES },
+      },
+      select: {
+        acquiredAt: true,
+        purchaseToman: true,
+        feesToman: true,
+        refurbToman: true,
+      },
+    }),
+  ]);
 
+  const definitions = buildAgingBucketDefinitions(rules.agingThresholds);
   const now = new Date();
 
-  const totals = AGING_BUCKETS.map((bucket) => ({
+  const totals = definitions.map((bucket) => ({
     label: bucket.label,
+    minDays: bucket.minDays,
+    maxDays: bucket.maxDays,
     count: 0,
     totalCost: 0,
   }));
@@ -133,16 +134,16 @@ export async function getAgingBuckets(): Promise<AgingBucket[]> {
     const days = Math.floor((now.getTime() - item.acquiredAt.getTime()) / (1000 * 60 * 60 * 24));
     const cost = item.purchaseToman + item.feesToman + item.refurbToman;
 
-    const index = AGING_BUCKETS.findIndex((bucket) => {
-      if (bucket.max == null) {
-        return days >= bucket.min;
+    const bucket = totals.find((entry) => {
+      if (entry.maxDays == null) {
+        return days >= entry.minDays;
       }
-      return days >= bucket.min && days <= bucket.max;
+      return days >= entry.minDays && days <= entry.maxDays;
     });
 
-    if (index >= 0) {
-      totals[index].count += 1;
-      totals[index].totalCost += cost;
+    if (bucket) {
+      bucket.count += 1;
+      bucket.totalCost += cost;
     }
   });
 

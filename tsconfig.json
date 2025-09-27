@@ -21,7 +21,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "lucide-react": ["./lib/icons/lucide-react"],
-      "recharts": ["./src/lib/recharts"]
+      "recharts": ["./src/lib/recharts"],
+      "react-hook-form": ["./src/lib/stubs/react-hook-form"],
+      "@hookform/resolvers/zod": ["./src/lib/stubs/hookform-resolver-zod"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

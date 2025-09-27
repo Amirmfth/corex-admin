@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     category: categoryParam?.trim() ? categoryParam : null,
   } as const;
 
-  const aggregates = getReportsAggregates(filters);
+  const aggregates = await getReportsAggregates(filters);
 
   return NextResponse.json({ filters: serializeFilters(filters), aggregates });
 }

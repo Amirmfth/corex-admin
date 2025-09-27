@@ -8,9 +8,15 @@ import {
   subDays,
   subMonths,
 } from 'date-fns';
-import { cache } from 'react';
+import { cache as reactCache } from 'react';
 
+import { getBusinessRulesSettings, buildAgingBucketDefinitions } from '@/lib/app-settings';
 import { prisma } from './prisma';
+
+const cache: <T extends (...args: any[]) => any>(fn: T) => T =
+  typeof reactCache === 'function'
+    ? reactCache
+    : ((fn) => fn);
 
 function serializeFilter(value: unknown): string {
   if (value === null || typeof value !== 'object') {
@@ -158,9 +164,19 @@ export type RollingAverages = {
   };
 };
 
-export type AgingBucketKey = '0-30' | '31-90' | '91-180' | '181+';
+export type AgingBucketSummary = {
+  key: string;
+  label: string;
+  minDays: number;
+  maxDays: number | null;
+  count: number;
+  totalT: number;
+};
 
-export type AgingBuckets = Record<AgingBucketKey, { count: number; totalT: number }>;
+export type AgingBuckets = {
+  buckets: AgingBucketSummary[];
+  thresholds: [number, number, number];
+};
 
 export type MonthlyPnlPoint = {
   month: string;
@@ -945,77 +961,84 @@ export async function getMonthlyPnl({ months }: { months: number }): Promise<Mon
   return getMonthlyPnlCached(createFilterKey('analytics:get-monthly-pnl', { months }), months);
 }
 
-const getAgingBucketsCached = cache(async () => {
-  const items = await prisma.item.findMany({
-    where: {
-      status: { in: ACTIVE_STATUSES },
-    },
-    select: {
-      acquiredAt: true,
-      purchaseToman: true,
-      feesToman: true,
-      refurbToman: true,
-    },
-  });
+export async function getAgingBuckets(): Promise<AgingBuckets> {
+  const [rules, items] = await Promise.all([
+    getBusinessRulesSettings(),
+    prisma.item.findMany({
+      where: {
+        status: { in: ACTIVE_STATUSES },
+      },
+      select: {
+        acquiredAt: true,
+        purchaseToman: true,
+        feesToman: true,
+        refurbToman: true,
+      },
+    }),
+  ]);
 
+  const definitions = buildAgingBucketDefinitions(rules.agingThresholds);
   const now = new Date();
 
-  const result: AgingBuckets = {
-    '0-30': { count: 0, totalT: 0 },
-    '31-90': { count: 0, totalT: 0 },
-    '91-180': { count: 0, totalT: 0 },
-    '181+': { count: 0, totalT: 0 },
-  };
+  const buckets = definitions.map((definition) => ({
+    ...definition,
+    count: 0,
+    totalT: 0,
+  }));
 
   items.forEach((item) => {
     const age = differenceInCalendarDays(now, item.acquiredAt);
     const cost = computeCost(item);
-    if (age <= 30) {
-      result['0-30'].count += 1;
-      result['0-30'].totalT += cost;
-    } else if (age <= 90) {
-      result['31-90'].count += 1;
-      result['31-90'].totalT += cost;
-    } else if (age <= 180) {
-      result['91-180'].count += 1;
-      result['91-180'].totalT += cost;
-    } else {
-      result['181+'].count += 1;
-      result['181+'].totalT += cost;
+    const bucket = buckets.find((entry) => {
+      if (entry.maxDays == null) {
+        return age >= entry.minDays;
+      }
+      return age >= entry.minDays && age <= entry.maxDays;
+    });
+    if (bucket) {
+      bucket.count += 1;
+      bucket.totalT += cost;
     }
   });
 
-  return result;
-});
-
-export async function getAgingBuckets(): Promise<AgingBuckets> {
-  return getAgingBucketsCached();
+  return { buckets, thresholds: rules.agingThresholds };
 }
 
-const getAgingWatchlistCached = cache(async () => {
-  const items = await prisma.item.findMany({
-    where: {
-      status: { in: ACTIVE_STATUSES },
-    },
-    select: {
-      id: true,
-      acquiredAt: true,
-      purchaseToman: true,
-      feesToman: true,
-      refurbToman: true,
-      listedPriceToman: true,
-      product: {
-        select: {
-          name: true,
-          brand: true,
-          model: true,
-        },
+export async function getAgingWatchlist(): Promise<{
+  warning: WatchlistItem[];
+  critical: WatchlistItem[];
+  warningThreshold: number;
+  criticalThreshold: number;
+}> {
+  const [rules, items] = await Promise.all([
+    getBusinessRulesSettings(),
+    prisma.item.findMany({
+      where: {
+        status: { in: ACTIVE_STATUSES },
       },
-      serial: true,
-    },
-  });
+      select: {
+        id: true,
+        acquiredAt: true,
+        purchaseToman: true,
+        feesToman: true,
+        refurbToman: true,
+        listedPriceToman: true,
+        product: {
+          select: {
+            name: true,
+            brand: true,
+            model: true,
+          },
+        },
+        serial: true,
+      },
+    }),
+  ]);
 
   const now = new Date();
+  const warningThreshold = rules.agingThresholds[1];
+  const criticalThreshold = rules.agingThresholds[2];
+
   const watchlist = items
     .map((item) => {
       const days = differenceInCalendarDays(now, item.acquiredAt);
@@ -1033,20 +1056,13 @@ const getAgingWatchlistCached = cache(async () => {
     })
     .sort((a, b) => b.daysInStock - a.daysInStock);
 
-  const over90 = watchlist.filter((item) => item.daysInStock > 90).slice(0, 10);
-  const over180 = watchlist.filter((item) => item.daysInStock > 180).slice(0, 10);
+  const warning = watchlist.filter((item) => item.daysInStock > warningThreshold).slice(0, 10);
+  const critical = watchlist.filter((item) => item.daysInStock > criticalThreshold).slice(0, 10);
 
-  return { over90, over180 };
-});
-
-export async function getAgingWatchlist(): Promise<{
-  over90: WatchlistItem[];
-  over180: WatchlistItem[];
-}> {
-  return getAgingWatchlistCached();
+  return { warning, critical, warningThreshold, criticalThreshold };
 }
 
-const getStaleListedCached = cache(async (_cacheKey: string, days: 30 | 60) => {
+export async function getStaleListed({ days }: { days: number }): Promise<StaleListedItem[]> {
   const now = new Date();
   const minDate = subDays(now, days);
 
@@ -1096,8 +1112,4 @@ const getStaleListedCached = cache(async (_cacheKey: string, days: 30 | 60) => {
       daysListed,
     };
   });
-});
-
-export async function getStaleListed({ days }: { days: 30 | 60 }): Promise<StaleListedItem[]> {
-  return getStaleListedCached(createFilterKey('analytics:get-stale-listed', { days }), days);
 }

@@ -10,6 +10,12 @@ import {
   startOfMonth,
 } from 'date-fns';
 
+import {
+  buildAgingBucketDefinitions,
+  getBusinessRulesSettings,
+  type AgingBucketDefinition,
+} from '@/lib/app-settings';
+
 export type ReportChannel =
   | 'Online Store'
   | 'Retail Shop'
@@ -132,6 +138,7 @@ export type PriceMarginPoint = {
   price: number;
   profit: number;
   margin: number;
+  isBelowMinimumMargin: boolean;
 };
 
 export type ReportsAggregates = {
@@ -146,6 +153,11 @@ export type ReportsAggregates = {
   aging: AgingBucketEntry[];
   repair: RepairRoi;
   priceVsMargin: PriceMarginPoint[];
+  meta: {
+    agingThresholds: [number, number, number];
+    minimumMarginPercent: number;
+    staleListingThresholdDays: number;
+  };
 };
 
 const NOW = startOfDay(new Date('2024-12-31T00:00:00Z'));
@@ -597,32 +609,36 @@ function computeListingFunnel(acquiredRecords: ReportRecord[]): ListingFunnelEnt
   ];
 }
 
-function computeAging(acquiredRecords: ReportRecord[]): AgingBucketEntry[] {
-  const buckets = new Map<number, { count: number; total: number }>();
+function computeAging(
+  acquiredRecords: ReportRecord[],
+  definitions: AgingBucketDefinition[],
+): AgingBucketEntry[] {
+  const buckets = definitions.map((definition) => ({
+    label: definition.label,
+    rangeStart: definition.minDays,
+    rangeEnd: definition.maxDays,
+    count: 0,
+    totalValue: 0,
+  }));
 
   acquiredRecords.forEach((record) => {
     const acquiredDate = parseISODate(record.acquiredAt) ?? NOW;
     const completedDate = parseISODate(record.soldAt ?? null) ?? NOW;
     const days = Math.max(differenceInCalendarDays(completedDate, acquiredDate), 0);
-    const bucketIndex = Math.min(Math.floor(days / 10), 11);
-    const bucket = buckets.get(bucketIndex) ?? { count: 0, total: 0 };
-    bucket.count += 1;
-    bucket.total += record.cost + record.refurbCost;
-    buckets.set(bucketIndex, bucket);
+    const bucket = buckets.find((entry) => {
+      if (entry.rangeEnd == null) {
+        return days >= entry.rangeStart;
+      }
+      return days >= entry.rangeStart && days <= entry.rangeEnd;
+    }) ?? buckets[buckets.length - 1];
+
+    if (bucket) {
+      bucket.count += 1;
+      bucket.totalValue += record.cost + record.refurbCost;
+    }
   });
 
-  return Array.from({ length: 12 }).map((_, index) => {
-    const bucket = buckets.get(index) ?? { count: 0, total: 0 };
-    const start = index * 10;
-    const end = index === 11 ? null : start + 9;
-    return {
-      label: end == null ? `${start}+` : `${start}-${end}`,
-      rangeStart: start,
-      rangeEnd: end,
-      count: bucket.count,
-      totalValue: bucket.total,
-    };
-  });
+  return buckets;
 }
 
 function computeRepairRoi(soldRecords: ReportRecord[]): RepairRoi {
@@ -649,7 +665,11 @@ function computeRepairRoi(soldRecords: ReportRecord[]): RepairRoi {
   };
 }
 
-function computePriceVsMargin(soldRecords: ReportRecord[]): PriceMarginPoint[] {
+function computePriceVsMargin(
+  soldRecords: ReportRecord[],
+  minimumMarginPercent: number,
+): PriceMarginPoint[] {
+  const minimumMarginRatio = minimumMarginPercent / 100;
   return soldRecords.map((record) => {
     const profit = record.price - record.cost - record.refurbCost;
     const margin = record.price > 0 ? profit / record.price : 0;
@@ -662,12 +682,15 @@ function computePriceVsMargin(soldRecords: ReportRecord[]): PriceMarginPoint[] {
       price: record.price,
       profit,
       margin,
+      isBelowMinimumMargin: margin < minimumMarginRatio,
     };
   });
 }
 
-export function getReportsAggregates(filters: ReportFilters): ReportsAggregates {
+export async function getReportsAggregates(filters: ReportFilters): Promise<ReportsAggregates> {
   const { filters: normalized, acquiredRecords, soldRecords } = filterRecords(filters);
+  const businessRules = await getBusinessRulesSettings();
+  const agingDefinitions = buildAgingBucketDefinitions(businessRules.agingThresholds);
 
   return {
     monthly: computeMonthlyFinancials(soldRecords, normalized),
@@ -678,9 +701,14 @@ export function getReportsAggregates(filters: ReportFilters): ReportsAggregates 
     topProducts: computeTopProducts(soldRecords),
     sellThrough: computeSellThrough(acquiredRecords, soldRecords),
     listingFunnel: computeListingFunnel(acquiredRecords),
-    aging: computeAging(acquiredRecords),
+    aging: computeAging(acquiredRecords, agingDefinitions),
     repair: computeRepairRoi(soldRecords),
-    priceVsMargin: computePriceVsMargin(soldRecords),
+    priceVsMargin: computePriceVsMargin(soldRecords, businessRules.minimumMarginPercent),
+    meta: {
+      agingThresholds: businessRules.agingThresholds,
+      minimumMarginPercent: businessRules.minimumMarginPercent,
+      staleListingThresholdDays: businessRules.staleListingThresholdDays,
+    },
   };
 }
 
