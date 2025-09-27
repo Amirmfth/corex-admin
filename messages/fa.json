@@ -9,6 +9,51 @@
     "settings": "تنظیمات",
     "purchases": "خریدها"
   },
+  "dashboard": {
+    "title": "داشبورد عملیات",
+    "subtitle": "عملکرد مالی و سلامت موجودی را پایش کنید.",
+    "kpi": {
+      "inventoryValue": "ارزش موجودی",
+      "inventoryHelper": "{count} آیتم فعال",
+      "profitMtd": "سود ماه جاری",
+      "profitHelper": "از ابتدای {month}",
+      "itemsInStock": "آیتم‌های در انبار",
+      "itemsInStockHelper": "آماده برای فروش",
+      "avgDays": "میانگین روزهای نگه‌داری",
+      "avgDaysHelper": "در وضعیت‌های فعال"
+    },
+    "charts": {
+      "profitTitle": "سود (۱۲ ماه گذشته)",
+      "profitValue": "سود",
+      "pnlTitle": "درآمد در برابر هزینه و سود",
+      "valueLabel": "مقدار",
+      "revenue": "درآمد",
+      "cost": "هزینه",
+      "profit": "سود"
+    },
+    "lists": {
+      "headers": {
+        "product": "محصول",
+        "serial": "سریال",
+        "age": "سن",
+        "cost": "هزینه",
+        "price": "قیمت لیست"
+      },
+      "ageLabel": "{count} روز",
+      "aging": {
+        "title": "هشدار فرسودگی",
+        "description": "{over90} آیتم بالای ۹۰ روز · {over180} بالای ۱۸۰",
+        "badge180": "۱۸۰+ روز",
+        "empty": "آیتم قدیمی وجود ندارد."
+      },
+      "stale": {
+        "title": "لیست‌شده اما راکد",
+        "description": "{over30} لیست بالای ۳۰ روز · {over60} بالای ۶۰",
+        "badge60": "۶۰+ روز",
+        "empty": "لیست راکدی وجود ندارد."
+      }
+    }
+  },
   "table": {
     "product": "محصول",
     "serial": "سریال",

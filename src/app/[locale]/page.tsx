@@ -6,5 +6,5 @@ type LocaleParams = {
 
 export default async function LocaleRootPage({ params }: LocaleParams) {
   const { locale } = await params;
-  redirect(`/${locale}/items`);
+  redirect(`/${locale}/dashboard`);
 }
