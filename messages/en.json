@@ -329,6 +329,7 @@
       "category": "Category",
       "allCategories": "All categories",
       "apply": "Apply",
+      "reset": "Reset",
       "export": "Export CSV",
       "exportCurrent": "Current view",
       "exportAll": "Full dataset"

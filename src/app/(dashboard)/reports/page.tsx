@@ -57,10 +57,10 @@ function buildFilters(
   availableChannels: ReportChannel[],
   categories: string[],
 ): ReportFilters {
-  const start = parseDate(getParam(params.start), defaults.startDate);
-  const end = parseDate(getParam(params.end), defaults.endDate);
-  const channels = parseChannels(params.channel, availableChannels);
-  const category = parseCategory(params.category, categories);
+  const start = parseDate(getParam(params.from), defaults.startDate);
+  const end = parseDate(getParam(params.to), defaults.endDate);
+  const channels = parseChannels(params['channels[]'], availableChannels);
+  const category = parseCategory(params.categoryId, categories);
 
   return {
     startDate: start,
@@ -80,11 +80,18 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const filters = buildFilters(resolvedParams, defaults, channels, categories);
   const aggregates = getReportsAggregates(filters);
   const serialized: SerializedFilters = serializeFilters(filters);
+  const serializedDefaults: SerializedFilters = serializeFilters(defaults);
 
   return (
     <div className="space-y-6">
       <PageHeader title={t('title')} description={t('subtitle')} />
-      <ReportsDashboard data={aggregates} filters={serialized} channels={channels} categories={categories} />
+      <ReportsDashboard
+        data={aggregates}
+        filters={serialized}
+        defaultFilters={serializedDefaults}
+        channels={channels}
+        categories={categories}
+      />
     </div>
   );
 }

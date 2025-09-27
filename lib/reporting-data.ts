@@ -42,10 +42,10 @@ export type ReportFilters = {
 };
 
 export type SerializedFilters = {
-  start: string;
-  end: string;
+  from: string;
+  to: string;
   channels: ReportChannel[];
-  category: string | null;
+  categoryId: string | null;
 };
 
 export type MonthlyFinancial = {
@@ -686,19 +686,19 @@ export function getReportsAggregates(filters: ReportFilters): ReportsAggregates 
 
 export function serializeFilters(filters: ReportFilters): SerializedFilters {
   return {
-    start: formatISO(filters.startDate, { representation: 'date' }),
-    end: formatISO(filters.endDate, { representation: 'date' }),
+    from: formatISO(filters.startDate, { representation: 'date' }),
+    to: formatISO(filters.endDate, { representation: 'date' }),
     channels: filters.channels,
-    category: filters.category,
+    categoryId: filters.category,
   };
 }
 
 export function deserializeFilters(value: SerializedFilters): ReportFilters {
   return {
-    startDate: startOfDay(new Date(value.start)),
-    endDate: endOfDay(new Date(value.end)),
+    startDate: startOfDay(new Date(value.from)),
+    endDate: endOfDay(new Date(value.to)),
     channels: value.channels,
-    category: value.category,
+    category: value.categoryId,
   };
 }
 

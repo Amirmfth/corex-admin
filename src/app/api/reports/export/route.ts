@@ -10,7 +10,7 @@ import {
 
 function parseChannels(params: URLSearchParams, available: ReportChannel[]): ReportChannel[] {
   const allowed = new Set<ReportChannel>(available);
-  const provided = params.getAll('channel') as ReportChannel[];
+  const provided = params.getAll('channels[]') as ReportChannel[];
   const valid = provided.filter((channel) => allowed.has(channel));
   return valid.length > 0 ? valid : available;
 }
@@ -21,9 +21,9 @@ export async function GET(request: Request) {
   const defaults = defaultFilters();
   const { channels: availableChannels } = getAvailableFilters();
 
-  const startParam = params.get('start');
-  const endParam = params.get('end');
-  const categoryParam = params.get('category');
+  const startParam = params.get('from');
+  const endParam = params.get('to');
+  const categoryParam = params.get('categoryId');
 
   const startDate = startParam ? new Date(startParam) : defaults.startDate;
   const endDate = endParam ? new Date(endParam) : defaults.endDate;

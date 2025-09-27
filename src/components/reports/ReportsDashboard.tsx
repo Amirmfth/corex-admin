@@ -7,8 +7,10 @@ import { useCallback, useMemo } from 'react';
 import { formatToman } from '../../../lib/money';
 import {
   AgingBucketEntry,
+  CategoryInventoryEntry,
   InventoryByStatusEntry,
   ListingFunnelEntry,
+  MonthlyFinancial,
   PriceMarginPoint,
   ProductProfitEntry,
   ReportChannel,
@@ -53,16 +55,39 @@ const PIE_COLORS = ['#2563eb', '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6'];
 type ReportsDashboardProps = {
   data: ReportsAggregates;
   filters: SerializedFilters;
+  defaultFilters: SerializedFilters;
   channels: ReportChannel[];
   categories: string[];
 };
 
 function buildFilterState(filters: SerializedFilters): FilterState {
   return {
-    start: filters.start,
-    end: filters.end,
+    from: filters.from,
+    to: filters.to,
     channels: filters.channels,
-    category: filters.category,
+    categoryId: filters.categoryId,
+  };
+}
+
+function formatDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getMonthRange(month: string) {
+  const [yearString, monthString] = month.split('-');
+  const year = Number.parseInt(yearString ?? '', 10);
+  const monthIndex = Number.parseInt(monthString ?? '', 10) - 1;
+
+  if (!Number.isFinite(year) || !Number.isFinite(monthIndex) || monthIndex < 0 || monthIndex > 11) {
+    return null;
+  }
+
+  const start = new Date(Date.UTC(year, monthIndex, 1));
+  const end = new Date(Date.UTC(year, monthIndex + 1, 0));
+
+  return {
+    from: formatDate(start),
+    to: formatDate(end),
   };
 }
 
@@ -108,6 +133,7 @@ function formatPercent(locale: string, value: number) {
 export default function ReportsDashboard({
   data,
   filters,
+  defaultFilters,
   channels,
   categories,
 }: ReportsDashboardProps) {
@@ -190,13 +216,39 @@ export default function ReportsDashboard({
     [router],
   );
 
+  const handleMonthClick = useCallback(
+    (entry: MonthlyFinancial) => {
+      const range = getMonthRange(entry.month);
+      if (!range) {
+        return;
+      }
+      const params = new URLSearchParams();
+      params.set('status', 'SOLD');
+      params.set('from', range.from);
+      params.set('to', range.to);
+      filters.channels.forEach((channel) => params.append('channels[]', channel));
+      if (filters.categoryId) {
+        params.set('categoryId', filters.categoryId);
+      }
+      router.push(`/items?${params.toString()}`);
+    },
+    [filters.categoryId, filters.channels, router],
+  );
+
+  const handleCategoryClick = useCallback(
+    (entry: CategoryInventoryEntry) => {
+      const params = new URLSearchParams();
+      params.set('categoryId', entry.category);
+      router.push(`/products?${params.toString()}`);
+    },
+    [router],
+  );
+
   const handleAgingBarClick = useCallback(
     (entry: AgingBucketEntry) => {
       const params = new URLSearchParams();
-      params.set('agingStart', entry.rangeStart.toString());
-      if (entry.rangeEnd != null) {
-        params.set('agingEnd', entry.rangeEnd.toString());
-      }
+      params.set('status', 'IN_STOCK,LISTED,RESERVED');
+      params.set('ageBin', entry.label);
       router.push(`/items?${params.toString()}`);
     },
     [router],
@@ -245,11 +297,11 @@ export default function ReportsDashboard({
 
   const handleExportAll = useCallback(async () => {
     const params = new URLSearchParams();
-    params.set('start', filters.start);
-    params.set('end', filters.end);
-    filters.channels.forEach((channel) => params.append('channel', channel));
-    if (filters.category) {
-      params.set('category', filters.category);
+    params.set('from', filters.from);
+    params.set('to', filters.to);
+    filters.channels.forEach((channel) => params.append('channels[]', channel));
+    if (filters.categoryId) {
+      params.set('categoryId', filters.categoryId);
     }
     const response = await fetch(`/api/reports/export?${params.toString()}`);
     if (!response.ok) {
@@ -258,7 +310,7 @@ export default function ReportsDashboard({
     const payload = await response.json();
     const exportData = payload.aggregates as ReportsAggregates;
     const rows: string[][] = [];
-    rows.push([t('title'), tFilters('dateRange'), `${filters.start} - ${filters.end}`]);
+    rows.push([t('title'), tFilters('dateRange'), `${filters.from} - ${filters.to}`]);
     rows.push([]);
     rows.push([tSections('financial'), tCharts('profitByMonth')]);
     rows.push([tCharts('month'), tTables('revenue'), tTables('cost'), tTables('profit')]);
@@ -294,6 +346,7 @@ export default function ReportsDashboard({
   }, [filters, t, tCharts, tFilters, tSections, tTables]);
 
   const filterState = useMemo(() => buildFilterState(filters), [filters]);
+  const defaultFilterState = useMemo(() => buildFilterState(defaultFilters), [defaultFilters]);
 
   const listingLookup = useMemo(() => {
     const map = new Map<ListingFunnelEntry['stage'], number>();
@@ -314,6 +367,7 @@ export default function ReportsDashboard({
         channels={channels}
         categories={categories}
         initialFilters={filterState}
+        defaultFilters={defaultFilterState}
         onExportCurrent={handleExportCurrent}
         onExportAll={handleExportAll}
       />
@@ -337,7 +391,13 @@ export default function ReportsDashboard({
                   <DateXAxis dataKey="month" variant="month" />
                   <CurrencyYAxis />
                   <CurrencyTooltip variant="month" />
-                  <Bar dataKey="profit" radius={[12, 12, 0, 0]} fill="#22c55e" />
+                  <Bar
+                    dataKey="profit"
+                    radius={[12, 12, 0, 0]}
+                    fill="#22c55e"
+                    cursor="pointer"
+                    onClick={({ payload }) => handleMonthClick(payload as MonthlyFinancial)}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -470,7 +530,13 @@ export default function ReportsDashboard({
                     <XAxis dataKey="category" />
                     <CurrencyYAxis />
                     <CurrencyTooltip />
-                    <Bar dataKey="value" fill="#8b5cf6" radius={[12, 12, 0, 0]}>
+                    <Bar
+                      dataKey="value"
+                      fill="#8b5cf6"
+                      radius={[12, 12, 0, 0]}
+                      cursor="pointer"
+                      onClick={({ payload }) => handleCategoryClick(payload as CategoryInventoryEntry)}
+                    >
                       <LabelList dataKey="value" position="top" formatter={(value: number) => formatCurrency(intlLocale, value)} />
                     </Bar>
                   </BarChart>
@@ -570,6 +636,7 @@ export default function ReportsDashboard({
                     dataKey="totalValue"
                     fill="#0ea5e9"
                     radius={[12, 12, 0, 0]}
+                    cursor="pointer"
                     onClick={({ payload }) => handleAgingBarClick(payload as AgingBucketEntry)}
                   >
                     <LabelList dataKey="count" position="top" />
