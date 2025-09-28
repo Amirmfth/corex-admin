@@ -4,6 +4,8 @@ type CategoryDelegate =
   | Pick<PrismaClient, "category">
   | Pick<Prisma.TransactionClient, "category">;
 
+type CategoryNodeSummary = { slug: string; parentId: string | null };
+
 export async function buildCategoryPath(
   nodeId: string,
   prisma: CategoryDelegate
@@ -12,7 +14,7 @@ export async function buildCategoryPath(
   let currentId: string | null = nodeId;
 
   while (currentId) {
-    const category = await prisma.category.findUnique({
+    const category: CategoryNodeSummary | null = await prisma.category.findUnique({
       where: { id: currentId },
       select: { slug: true, parentId: true },
     });

@@ -1,4 +1,5 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 
@@ -7,10 +8,15 @@ import { prisma } from "../../../../../lib/prisma";
 import { updateProductSchema } from "../../../../../lib/validation.product";
 import { BadRequestError, NotFoundError, handleApiError, parseJsonBody } from "../_utils";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function GET(_request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
   try {
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: { select: { id: true, name: true, slug: true, path: true } },
         _count: { select: { items: true } },
@@ -22,7 +28,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     }
 
     const soldItems = await prisma.item.findMany({
-      where: { productId: params.id, soldAt: { not: null } },
+      where: { productId: id, soldAt: { not: null } },
       select: { id: true, soldAt: true, soldPriceToman: true },
       orderBy: { soldAt: "desc" },
       take: 25,
@@ -34,7 +40,8 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
   try {
     const payload = await parseJsonBody(request, updateProductSchema);
 
@@ -44,24 +51,29 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     const data: Prisma.ProductUpdateInput = {};
 
-    if (payload.name !== undefined) {
+    if (typeof payload.name === 'string') {
       data.name = payload.name;
     }
 
     if (payload.brand !== undefined) {
-      data.brand = payload.brand ?? null;
+      data.brand = { set: payload.brand };
     }
 
     if (payload.model !== undefined) {
-      data.model = payload.model ?? null;
+      data.model = { set: payload.model };
     }
 
     if (payload.categoryId !== undefined) {
-      data.categoryId = payload.categoryId ?? null;
+      data.category = payload.categoryId
+        ? { connect: { id: payload.categoryId } }
+        : { disconnect: true };
     }
 
     if (payload.specsJson !== undefined) {
-      data.specsJson = payload.specsJson as Prisma.JsonValue;
+      data.specsJson =
+        payload.specsJson === null
+          ? Prisma.JsonNull
+          : (payload.specsJson as Prisma.InputJsonValue);
     }
 
     if (payload.imageUrls !== undefined) {
@@ -69,7 +81,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data,
       include: {
         category: { select: { id: true, name: true, slug: true, path: true } },
@@ -83,12 +95,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
   try {
     const locale = resolveRequestLocale(request);
     const t = await getTranslations({ locale, namespace: "products" });
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, _count: { select: { items: true } } },
     });
 
@@ -100,7 +113,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       throw new BadRequestError(t("delete.hasItems"));
     }
 
-    await prisma.product.delete({ where: { id: params.id } });
+    await prisma.product.delete({ where: { id } });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

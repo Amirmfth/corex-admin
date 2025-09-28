@@ -56,19 +56,21 @@ export default function GroupedBarChart({ data, locale, labels }: GroupedBarChar
             tickLine={false}
             axisLine={false}
             tick={{ fill: 'var(--muted-strong)', fontSize: 12 }}
-            tickFormatter={(value) => formatCurrency(value, locale)}
+            tickFormatter={(value) => formatCurrency(Number(value), locale)}
           />
           <Tooltip
             cursor={{ fill: 'var(--surface-hover)' }}
-            formatter={(value: number, key: string) => {
+            formatter={(value: unknown, name: unknown) => {
+              const numericValue = typeof value === 'number' ? value : Number(value);
+              const key = typeof name === 'string' ? name : String(name ?? '');
               const labelMap: Record<string, string> = {
                 revenueT: labels.revenue,
                 costT: labels.cost,
                 profitT: labels.profit,
               };
-              return [formatCurrency(value, locale), labelMap[key] ?? labels.currency];
+              return [formatCurrency(Number.isFinite(numericValue) ? numericValue : 0, locale), labelMap[key] ?? labels.currency];
             }}
-            labelFormatter={(label) => label}
+            labelFormatter={(label) => String(label ?? '')}
           />
           <Legend wrapperStyle={{ color: 'var(--muted-strong)' }} formatter={(value) => {
             const labelMap: Record<string, string> = {

@@ -4,15 +4,17 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { toast } from 'sonner';
 
-import type { DisplaySettings } from '@/lib/app-settings';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { DisplaySettings } from '@/lib/app-settings';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+
 import { updateDisplaySettings } from '../actions';
 import {
   displaySettingsSchema,
   type DisplaySettingsInput,
 } from '../schemas';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 const buttonClasses =
   'inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-foreground)] shadow transition hover:bg-[var(--accent-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-70';

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
-import type { SVGProps } from 'react';
+import type { ComponentType, SVGProps } from 'react';
 
 import { Link, type AppLocale } from '../../i18n/routing';
 
@@ -52,7 +52,7 @@ interface MobileNavProps {
 }
 
 // ---------- Icon registry (client-side mapping) ----------
-const ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
+const ICONS: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   dashboard: LayoutDashboard,
   items: Boxes,
   categories: FolderTree,

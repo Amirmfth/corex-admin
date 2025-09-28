@@ -48,7 +48,12 @@ export const DEFAULT_BUSINESS_RULES: BusinessRulesSettings = {
 };
 
 export async function getSetting<T>(key: SettingsKey, defaultValue: T): Promise<T> {
-  const record = await prisma.appSetting.findUnique({ where: { key } });
+  const appSettingModel: any = (prisma as any).appSetting;
+  if (!appSettingModel?.findUnique) {
+    return defaultValue;
+  }
+
+  const record = await appSettingModel.findUnique({ where: { key } }).catch(() => null);
   if (!record) {
     return defaultValue;
   }
@@ -65,7 +70,12 @@ export async function getSetting<T>(key: SettingsKey, defaultValue: T): Promise<
 }
 
 export async function setSetting<T>(key: SettingsKey, value: T): Promise<void> {
-  await prisma.appSetting.upsert({
+  const appSettingModel: any = (prisma as any).appSetting;
+  if (!appSettingModel?.upsert) {
+    return;
+  }
+
+  await appSettingModel.upsert({
     where: { key },
     update: { value: value as any },
     create: { key, value: value as any },

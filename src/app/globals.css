@@ -2,6 +2,9 @@
 
 :root {
   color-scheme: light;
+  --font-geist-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-geist-mono: 'JetBrains Mono', 'Fira Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 

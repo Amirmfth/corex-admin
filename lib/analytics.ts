@@ -11,6 +11,7 @@ import {
 import { cache as reactCache } from 'react';
 
 import { getBusinessRulesSettings, buildAgingBucketDefinitions } from '@/lib/app-settings';
+
 import { prisma } from './prisma';
 
 const cache: <T extends (...args: any[]) => any>(fn: T) => T =
@@ -53,6 +54,8 @@ const INVENTORY_STATUS_KEYS = [
   ItemStatus.LISTED,
   ItemStatus.RESERVED,
 ] as const;
+
+const INVENTORY_STATUS_VALUES: ItemStatus[] = [...INVENTORY_STATUS_KEYS];
 
 type InventoryStatusKey = (typeof INVENTORY_STATUS_KEYS)[number];
 
@@ -223,7 +226,7 @@ function createEmptyStatusSummary(): Record<InventoryStatusKey, StatusSummary> {
 export async function getInventoryBreakdown(): Promise<InventoryBreakdown> {
   const items = await prisma.item.findMany({
     where: {
-      status: { in: INVENTORY_STATUS_KEYS },
+      status: { in: INVENTORY_STATUS_VALUES },
     },
     select: {
       status: true,
@@ -344,7 +347,7 @@ export async function getChannelMix({ from, to }: ChannelMixRequest): Promise<Ch
 
   return grouped
     .map((entry) => ({
-      channel: entry.saleChannel ?? 'UNKNOWN',
+      channel: (entry.saleChannel ?? 'UNKNOWN') as ChannelMixEntry['channel'],
       count: entry._count._all,
       revenueT: entry._sum.soldPriceToman ?? 0,
     }))
@@ -543,7 +546,7 @@ export async function getSellThrough({
 
   const inventoryItems = await prisma.item.findMany({
     where: {
-      status: { in: INVENTORY_STATUS_KEYS },
+      status: { in: INVENTORY_STATUS_VALUES },
       acquiredAt: {
         lte: to,
       },
@@ -616,7 +619,7 @@ export async function getSellThrough({
 export async function getAgingHistogram(): Promise<AgingHistogramBucket[]> {
   const items = await prisma.item.findMany({
     where: {
-      status: { in: INVENTORY_STATUS_KEYS },
+      status: { in: INVENTORY_STATUS_VALUES },
     },
     select: {
       acquiredAt: true,

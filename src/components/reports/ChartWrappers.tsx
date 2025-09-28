@@ -18,6 +18,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type {
+  RechartsTooltipProps,
+  RechartsXAxisProps,
+  RechartsYAxisProps,
+} from 'recharts';
 
 import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
@@ -71,17 +76,17 @@ function useChartFormatters() {
   };
 }
 
-export function CurrencyYAxis(props: YAxisProps) {
+export function CurrencyYAxis(props: RechartsYAxisProps) {
   const { compactNumber } = useChartFormatters();
   return <YAxis {...props} tickFormatter={(value) => compactNumber.format(Number(value))} />;
 }
 
-export function PercentYAxis(props: YAxisProps) {
+export function PercentYAxis(props: RechartsYAxisProps) {
   const { percentFormatter } = useChartFormatters();
   return <YAxis {...props} tickFormatter={(value) => percentFormatter.format(Number(value))} />;
 }
 
-export type DateXAxisProps = XAxisProps & {
+export type DateXAxisProps = RechartsXAxisProps & {
   variant?: 'date' | 'month';
 };
 
@@ -90,8 +95,8 @@ export function DateXAxis({ variant = 'date', ...props }: DateXAxisProps) {
   return (
     <XAxis
       {...props}
-      tickFormatter={(value: TooltipValueType) => {
-        if (!value) return '';
+      tickFormatter={(value) => {
+        if (value == null) return '';
         const dateValue = new Date(String(value));
         return variant === 'month' ? monthFormatter.format(dateValue) : dateFormatter.format(dateValue);
       }}
@@ -99,7 +104,7 @@ export function DateXAxis({ variant = 'date', ...props }: DateXAxisProps) {
   );
 }
 
-export type CurrencyTooltipProps = TooltipProps<number, string> & {
+export type CurrencyTooltipProps = RechartsTooltipProps<number, string> & {
   variant?: 'date' | 'month';
 };
 
@@ -109,9 +114,13 @@ export function CurrencyTooltip({ variant = 'date', ...props }: CurrencyTooltipP
   return (
     <Tooltip
       {...props}
-      formatter={(value: TooltipValueType, name) => [tomanFormatter(Number(value)), name]}
+      formatter={(value, name) => {
+        const numericValue = typeof value === 'number' ? value : Number(value);
+        const label = typeof name === 'string' ? name : String(name ?? '');
+        return [tomanFormatter(Number.isFinite(numericValue) ? numericValue : 0), label];
+      }}
       labelFormatter={(value) => {
-        if (!value) return '';
+        if (value == null) return '';
         const dateValue = new Date(String(value));
         return variant === 'month' ? monthFormatter.format(dateValue) : dateFormatter.format(dateValue);
       }}
@@ -119,14 +128,18 @@ export function CurrencyTooltip({ variant = 'date', ...props }: CurrencyTooltipP
   );
 }
 
-export type PercentTooltipProps = TooltipProps<number, string>;
+export type PercentTooltipProps = RechartsTooltipProps<number, string>;
 
 export function PercentTooltip(props: PercentTooltipProps) {
   const { percentFormatter } = useChartFormatters();
   return (
     <Tooltip
       {...props}
-      formatter={(value: TooltipValueType, name) => [percentFormatter.format(Number(value)), name]}
+      formatter={(value, name) => {
+        const numericValue = typeof value === 'number' ? value : Number(value);
+        const label = typeof name === 'string' ? name : String(name ?? '');
+        return [percentFormatter.format(Number.isFinite(numericValue) ? numericValue : 0), label];
+      }}
     />
   );
 }

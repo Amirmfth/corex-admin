@@ -80,11 +80,18 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const filters = buildFilters(resolvedParams, defaults, channels, categories);
   const aggregates = await getReportsAggregates(filters);
   const serialized: SerializedFilters = serializeFilters(filters);
+  const defaultSerialized: SerializedFilters = serializeFilters(defaults);
 
   return (
     <div className="space-y-6">
       <PageHeader title={t('title')} description={t('subtitle')} />
-      <ReportsDashboard data={aggregates} filters={serialized} channels={channels} categories={categories} />
+      <ReportsDashboard
+        data={aggregates}
+        filters={serialized}
+        defaultFilters={defaultSerialized}
+        channels={channels}
+        categories={categories}
+      />
     </div>
   );
 }

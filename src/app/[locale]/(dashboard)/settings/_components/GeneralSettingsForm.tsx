@@ -4,15 +4,17 @@ import { useTranslations } from 'next-intl';
 import { useCallback, type ReactNode } from 'react';
 import { toast } from 'sonner';
 
-import type { GeneralSettings } from '@/lib/app-settings';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { GeneralSettings } from '@/lib/app-settings';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+
 import { updateGeneralSettings } from '../actions';
 import {
   generalSettingsSchema,
   type GeneralSettingsInput,
 } from '../schemas';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 const CHANNEL_OPTIONS = ['DIRECT', 'ONLINE', 'WHOLESALE', 'OTHER'] as const;
 const CONDITION_OPTIONS = ['NEW', 'USED', 'FOR_PARTS'] as const;

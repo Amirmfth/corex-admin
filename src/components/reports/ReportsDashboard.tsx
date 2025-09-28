@@ -413,7 +413,11 @@ export default function ReportsDashboard({
                     radius={[12, 12, 0, 0]}
                     fill="#22c55e"
                     cursor="pointer"
-                    onClick={({ payload }) => handleMonthClick(payload as MonthlyFinancial)}
+                    onClick={(event) => {
+                      const payload = (event as { payload?: unknown })?.payload;
+                      if (!payload) return;
+                      handleMonthClick(payload as MonthlyFinancial);
+                    }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -484,7 +488,14 @@ export default function ReportsDashboard({
                       <LabelList
                         dataKey="percentage"
                         position="outside"
-                        formatter={(value: number) => `${value.toFixed(1)}%`}
+                        formatter={(value: unknown) => {
+                          const numeric =
+                            typeof value === 'number' ? value : Number(value);
+                          if (Number.isFinite(numeric)) {
+                            return `${numeric.toFixed(1)}%`;
+                          }
+                          return value == null ? '' : String(value);
+                        }}
                       />
                     </Pie>
                   </PieChart>
@@ -525,7 +536,16 @@ export default function ReportsDashboard({
                     {inventoryStatusKeys.map((status) => (
                       <Bar
                         key={status}
-                        dataKey={(entry: InventoryByStatusEntry) => entry.statuses[status] ?? 0}
+                        dataKey={(entry) => {
+                          const typedEntry = entry as InventoryByStatusEntry | undefined;
+                          const statuses = typedEntry?.statuses as Record<string, unknown> | undefined;
+                          const value = statuses?.[status];
+                          if (typeof value === 'number') {
+                            return value;
+                          }
+                          const numeric = Number(value);
+                          return Number.isFinite(numeric) ? numeric : 0;
+                        }}
                         stackId="1"
                         fill={STATUS_COLORS[status]}
                         name={t(`status.${status}`)}
@@ -552,9 +572,20 @@ export default function ReportsDashboard({
                       fill="#8b5cf6"
                       radius={[12, 12, 0, 0]}
                       cursor="pointer"
-                      onClick={({ payload }) => handleCategoryClick(payload as CategoryInventoryEntry)}
+                      onClick={(event) => {
+                        const payload = (event as { payload?: unknown })?.payload;
+                        if (!payload) return;
+                        handleCategoryClick(payload as CategoryInventoryEntry);
+                      }}
                     >
-                      <LabelList dataKey="value" position="top" formatter={(value: number) => formatCurrency(intlLocale, value)} />
+                      <LabelList
+                        dataKey="value"
+                        position="top"
+                        formatter={(value: unknown) => {
+                          const numericValue = typeof value === 'number' ? value : Number(value);
+                          return formatCurrency(intlLocale, Number.isFinite(numericValue) ? numericValue : 0);
+                        }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -598,7 +629,14 @@ export default function ReportsDashboard({
                     <PercentYAxis />
                     <PercentTooltip />
                     <Bar dataKey="rate" fill="#2563eb" radius={[12, 12, 0, 0]}>
-                      <LabelList dataKey="rate" position="top" formatter={(value: number) => formatPercent(locale, value)} />
+                      <LabelList
+                        dataKey="rate"
+                        position="top"
+                        formatter={(value: unknown) => {
+                          const numericValue = typeof value === 'number' ? value : Number(value);
+                          return formatPercent(locale, Number.isFinite(numericValue) ? numericValue : 0);
+                        }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -654,7 +692,11 @@ export default function ReportsDashboard({
                     fill="#0ea5e9"
                     radius={[12, 12, 0, 0]}
                     cursor="pointer"
-                    onClick={({ payload }) => handleAgingBarClick(payload as AgingBucketEntry)}
+                    onClick={(event) => {
+                      const payload = (event as { payload?: unknown })?.payload;
+                      if (!payload) return;
+                      handleAgingBarClick(payload as AgingBucketEntry);
+                    }}
                   >
                     <LabelList dataKey="count" position="top" />
                   </Bar>
@@ -707,7 +749,14 @@ export default function ReportsDashboard({
                     <PercentYAxis />
                     <PercentTooltip />
                     <Bar dataKey="margin" fill="#22c55e" radius={[12, 12, 0, 0]}>
-                      <LabelList dataKey="margin" position="top" formatter={(value: number) => formatPercent(locale, value)} />
+                      <LabelList
+                        dataKey="margin"
+                        position="top"
+                        formatter={(value: unknown) => {
+                          const numericValue = typeof value === 'number' ? value : Number(value);
+                          return formatPercent(locale, Number.isFinite(numericValue) ? numericValue : 0);
+                        }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -725,29 +774,58 @@ export default function ReportsDashboard({
                     <XAxis
                       type="number"
                       dataKey="price"
-                      tickFormatter={(value: number) => formatCurrency(intlLocale, value)}
+                      tickFormatter={(value: unknown) => {
+                        const numeric = typeof value === 'number' ? value : Number(value);
+                        if (Number.isFinite(numeric)) {
+                          return formatCurrency(intlLocale, numeric);
+                        }
+                        return value == null ? '' : String(value);
+                      }}
                     />
                     <PercentYAxis type="number" dataKey="margin" />
                     <Tooltip
-                      formatter={(value: number, name, payload) => {
+                      formatter={(rawValue: unknown, name, payload) => {
+                        const numericValue = typeof rawValue === 'number' ? rawValue : Number(rawValue);
                         if (name === 'margin') {
-                          return [formatPercent(locale, value), tTables('margin')];
+                          return [formatPercent(locale, Number.isFinite(numericValue) ? numericValue : 0), tTables('margin')];
                         }
                         if (name === 'price') {
-                          return [formatCurrency(intlLocale, value), tTables('price')];
+                          return [
+                            formatCurrency(intlLocale, Number.isFinite(numericValue) ? numericValue : 0),
+                            tTables('price'),
+                          ];
                         }
-                        return [formatCurrency(intlLocale, (payload?.payload as PriceMarginPoint).profit), tTables('profit')];
+                        const pointRecord = (payload as { payload?: unknown } | undefined)?.payload;
+                        const point = (pointRecord ?? {}) as Partial<PriceMarginPoint>;
+                        const profit = typeof point.profit === 'number' ? point.profit : Number(point.profit ?? 0);
+                        return [formatCurrency(intlLocale, Number.isFinite(profit) ? profit : 0), tTables('profit')];
                       }}
                       labelFormatter={(_, payload) => {
-                        if (!payload || payload.length === 0) return '';
-                        const point = payload[0].payload as PriceMarginPoint;
-                        return `${point.productName} • ${point.itemId}`;
+                        if (!Array.isArray(payload) || payload.length === 0) return '';
+                        const [first] = payload;
+                        const point = (first?.payload ?? {}) as Partial<PriceMarginPoint>;
+                        const name = point.productName ?? '';
+                        const itemId = point.itemId ?? '';
+                        if (!name && !itemId) {
+                          return '';
+                        }
+                        if (!name) {
+                          return itemId;
+                        }
+                        if (!itemId) {
+                          return name;
+                        }
+                        return `${name} • ${itemId}`;
                       }}
                     />
                     <Scatter
                       data={data.priceVsMargin}
                       shape={renderMarginPoint}
-                      onClick={({ payload }) => handleScatterClick(payload as PriceMarginPoint)}
+                      onClick={(event) => {
+                        const payload = (event as { payload?: unknown })?.payload;
+                        if (!payload) return;
+                        handleScatterClick(payload as PriceMarginPoint);
+                      }}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>

@@ -5,13 +5,14 @@ import { useCallback, type ReactNode } from 'react';
 import { toast } from 'sonner';
 
 import type { BusinessRulesSettings } from '@/lib/app-settings';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
 import { updateBusinessRules } from '../actions';
 import {
   businessRulesSchema,
   type BusinessRulesInput,
 } from '../schemas';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 const buttonClasses =
   'inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-foreground)] shadow transition hover:bg-[var(--accent-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-70';
@@ -41,9 +42,9 @@ export default function BusinessRulesForm({ defaultValues }: { defaultValues: Bu
     resolver: zodResolver(businessRulesSchema),
   });
 
-  const thresholds = form.watch('agingThresholds');
-  const marginValue = form.watch('minimumMarginPercent');
-  const staleValue = form.watch('staleListingThresholdDays');
+  const thresholds = (form.watch('agingThresholds') as number[] | undefined) ?? [];
+  const marginValue = (form.watch('minimumMarginPercent') as number | undefined) ?? 0;
+  const staleValue = (form.watch('staleListingThresholdDays') as number | undefined) ?? 0;
 
   const onSubmit = useCallback(
     async (values: BusinessRulesInput) => {

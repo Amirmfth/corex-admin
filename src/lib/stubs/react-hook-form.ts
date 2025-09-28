@@ -1,9 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-type FieldErrors<T> = Partial<{ [K in keyof T]: { message?: string } | FieldErrors<T[K]> }> & {
-  [key: string]: any;
-};
-
 type ResolverResult<T> = Promise<{ values: T; errors: Record<string, { message?: string }> }>;
 
 type Resolver<T> = (values: T) => ResolverResult<T> | { values: T; errors: Record<string, { message?: string }> };
@@ -28,8 +24,7 @@ type UseFormReturn<T> = {
   handleSubmit: (onValid: SubmitHandler<T>, onInvalid?: SubmitErrorHandler) => (event?: React.FormEvent) => Promise<void>;
   reset: (values: T) => void;
   setValue: (name: string, value: any) => void;
-  watch: () => T;
-  watch: (name: string) => any;
+  watch: (name?: string) => any;
   formState: {
     isSubmitting: boolean;
     errors: Record<string, { message?: string }>;

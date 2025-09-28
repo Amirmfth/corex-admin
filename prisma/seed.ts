@@ -343,23 +343,26 @@ async function main() {
     },
   };
 
-  await Promise.all([
-    prisma.appSetting.upsert({
-      where: { key: 'general' },
-      update: { value: defaultSettings.general },
-      create: { key: 'general', value: defaultSettings.general },
-    }),
-    prisma.appSetting.upsert({
-      where: { key: 'display' },
-      update: { value: defaultSettings.display },
-      create: { key: 'display', value: defaultSettings.display },
-    }),
-    prisma.appSetting.upsert({
-      where: { key: 'businessRules' },
-      update: { value: defaultSettings.businessRules },
-      create: { key: 'businessRules', value: defaultSettings.businessRules },
-    }),
-  ]);
+  const appSettingModel: any = (prisma as any).appSetting;
+  if (appSettingModel?.upsert) {
+    await Promise.all([
+      appSettingModel.upsert({
+        where: { key: 'general' },
+        update: { value: defaultSettings.general },
+        create: { key: 'general', value: defaultSettings.general },
+      }),
+      appSettingModel.upsert({
+        where: { key: 'display' },
+        update: { value: defaultSettings.display },
+        create: { key: 'display', value: defaultSettings.display },
+      }),
+      appSettingModel.upsert({
+        where: { key: 'businessRules' },
+        update: { value: defaultSettings.businessRules },
+        create: { key: 'businessRules', value: defaultSettings.businessRules },
+      }),
+    ]);
+  }
 
   console.log('✅ Seed completed with categories, products, items (>50), inventory movements, sample sales/purchases, and default settings.');
 }

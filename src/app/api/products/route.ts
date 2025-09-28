@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { prisma } from "../../../../lib/prisma";
@@ -92,7 +92,10 @@ export async function POST(request: Request) {
         brand: payload.brand ?? null,
         model: payload.model ?? null,
         categoryId: payload.categoryId ?? null,
-        specsJson: payload.specsJson as Prisma.JsonValue | undefined,
+        specsJson:
+          payload.specsJson === null
+            ? Prisma.JsonNull
+            : (payload.specsJson as Prisma.InputJsonValue | undefined),
         imageUrls: payload.imageUrls ?? [],
       },
       include: {

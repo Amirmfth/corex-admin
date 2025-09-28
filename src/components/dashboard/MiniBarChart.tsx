@@ -54,12 +54,15 @@ export default function MiniBarChart({
             tickLine={false}
             axisLine={false}
             tick={{ fill: 'var(--muted-strong)', fontSize: 12 }}
-            tickFormatter={(value) => formatCurrency(value, locale)}
+            tickFormatter={(value) => formatCurrency(Number(value), locale)}
           />
           <Tooltip
             cursor={{ fill: 'var(--surface-hover)' }}
-            formatter={(value: number) => [formatCurrency(value, locale), valueLabel ?? '']}
-            labelFormatter={(label) => label}
+            formatter={(value: unknown) => {
+              const numericValue = typeof value === 'number' ? value : Number(value);
+              return [formatCurrency(Number.isFinite(numericValue) ? numericValue : 0, locale), valueLabel ?? ''];
+            }}
+            labelFormatter={(label) => String(label ?? '')}
           />
           <Bar dataKey="value" radius={[8, 8, 0, 0]} fill={barColor} />
         </BarChart>

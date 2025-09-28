@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import ItemListPanel from '@/components/dashboard/ItemListPanel';
 import { Badge } from '@/components/ui/badge';
+import { getBusinessRulesSettings } from '@/lib/app-settings';
 
 import type { AppLocale } from '../../../../../i18n/routing';
 import {
@@ -9,7 +10,6 @@ import {
   getAgingWatchlist,
   getStaleListed,
 } from '../../../../../lib/analytics';
-import { getBusinessRulesSettings } from '@/lib/app-settings';
 import { getNumberFormatter } from '../utils';
 
 interface ListsSectionProps {
@@ -32,10 +32,10 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
   ]);
 
   const agingWarningCount = agingSummary.buckets
-    .filter((bucket) => bucket.rangeStart > agingWatchlist.warningThreshold)
+    .filter((bucket) => bucket.minDays > agingWatchlist.warningThreshold)
     .reduce((total, bucket) => total + bucket.count, 0);
   const agingCriticalCount = agingSummary.buckets
-    .filter((bucket) => bucket.rangeStart > agingWatchlist.criticalThreshold)
+    .filter((bucket) => bucket.minDays > agingWatchlist.criticalThreshold)
     .reduce((total, bucket) => total + bucket.count, 0);
 
   const stalePrimaryCount = stalePrimary.length;

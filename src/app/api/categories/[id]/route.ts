@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 
@@ -16,14 +17,12 @@ import {
   parseJsonBody,
 } from "../_utils";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-export async function PATCH(request: Request, { params }: RouteParams) {
-  const categoryId = params.id;
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const { id: categoryId } = await context.params;
 
   try {
     const payload = await parseJsonBody(request, updateCategorySchema);
@@ -56,7 +55,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
         if (parentId !== existing.parentId) {
           await ensureValidParent(tx, parentId, categoryId);
-          data.parentId = parentId;
+          data.parent = parentId
+            ? {
+                connect: { id: parentId },
+              }
+            : {
+                disconnect: true,
+              };
           shouldRebuildPaths = true;
         }
       }
@@ -91,8 +96,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: Request, { params }: RouteParams) {
-  const categoryId = params.id;
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const { id: categoryId } = await context.params;
 
   try {
     const locale = resolveRequestLocale(request);

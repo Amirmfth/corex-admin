@@ -30,6 +30,8 @@ export type CategoryClient =
   | Pick<PrismaClient, "category">
   | Pick<Prisma.TransactionClient, "category">;
 
+type CategoryParentSummary = { id: string; parentId: string | null };
+
 export async function parseJsonBody<T>(
   request: Request,
   schema: ZodSchema<T>
@@ -101,7 +103,7 @@ export async function ensureValidParent(
   let cursor: string | null = parentId;
 
   while (cursor) {
-    const parent = await prisma.category.findUnique({
+    const parent: CategoryParentSummary | null = await prisma.category.findUnique({
       where: { id: cursor },
       select: { id: true, parentId: true },
     });

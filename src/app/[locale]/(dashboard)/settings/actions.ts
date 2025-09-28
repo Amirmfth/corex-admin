@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { routing } from '../../../../../i18n/routing';
 import { setSetting } from '@/lib/app-settings';
+
+import { routing } from '../../../../../i18n/routing';
+
 import type {
   BusinessRulesInput,
   DisplaySettingsInput,

@@ -1,19 +1,8 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
 import { headers } from 'next/headers';
 import './globals.css';
 
 import { routing, AppLocale } from '../../i18n/routing';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 
 const DEFAULT_LOCALE = routing.defaultLocale as AppLocale;
 
@@ -49,9 +38,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--surface)] text-[var(--foreground)]`}
-      >
+      <body className="antialiased bg-[var(--surface)] text-[var(--foreground)]">
         {children}
       </body>
     </html>

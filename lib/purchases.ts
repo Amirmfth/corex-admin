@@ -202,7 +202,6 @@ export async function receivePurchase(purchaseId: string): Promise<{
           orderBy: { id: 'asc' },
         },
       },
-      lock: { mode: 'ForUpdate' },
     });
 
     if (!purchase) {

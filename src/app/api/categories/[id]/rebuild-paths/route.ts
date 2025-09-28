@@ -1,17 +1,16 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { rebuildCategorySubtreePaths } from "../../../../../../lib/category-path";
 import { prisma } from "../../../../../../lib/prisma";
 import { handleApiError, NotFoundError } from "../../_utils";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-export async function POST(req, { params }: RouteParams) {
-  const categoryId = params.id;
+export async function POST(_req: NextRequest, context: RouteContext) {
+  const { id: categoryId } = await context.params;
 
   try {
     const exists = await prisma.category.findUnique({
