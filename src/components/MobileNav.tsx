@@ -20,7 +20,6 @@ import type { SVGProps } from 'react';
 
 import { Link, type AppLocale } from '../../i18n/routing';
 
-
 // ---------- Types ----------
 export type MobileNavItem = {
   key: string;
@@ -85,6 +84,7 @@ export default function MobileNav({
 
   function isActive(href: string) {
     if (href === '/') return afterLocale === '/' || afterLocale === '';
+    console.log({ afterLocale, href });
     return afterLocale === href || afterLocale.startsWith(href + '/');
   }
 

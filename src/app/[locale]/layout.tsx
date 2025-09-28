@@ -13,7 +13,7 @@ import { AppLocale, routing } from '../../../i18n/routing';
 
 // ---- Basic helpers ----
 const NAV_BASE = [
-  { key: 'dashboard', href: '/' },
+  { key: 'dashboard', href: '/dashboard' },
   { key: 'items', href: '/items' },
   { key: 'categories', href: '/categories' },
   { key: 'products', href: '/products' },
