@@ -223,3 +223,129 @@ export async function getSellableItems(search?: string) {
     },
   });
 }
+
+type TransactionClient = Prisma.TransactionClient;
+
+async function adjustSaleTotals(tx: TransactionClient, saleId: string, amount: number) {
+  const sale = await tx.sale.findUnique({
+    where: { id: saleId },
+    select: { totalToman: true },
+  });
+
+  if (!sale) {
+    return;
+  }
+
+  const nextTotal = Math.max(0, sale.totalToman - amount);
+
+  await tx.sale.update({
+    where: { id: saleId },
+    data: { totalToman: nextTotal },
+  });
+}
+
+async function adjustPurchaseTotals(
+  tx: TransactionClient,
+  purchaseId: string,
+  amount: number,
+) {
+  const purchase = await tx.purchase.findUnique({
+    where: { id: purchaseId },
+    select: { totalToman: true },
+  });
+
+  if (!purchase) {
+    return;
+  }
+
+  const nextTotal = Math.max(0, purchase.totalToman - amount);
+
+  await tx.purchase.update({
+    where: { id: purchaseId },
+    data: { totalToman: nextTotal },
+  });
+}
+
+export async function deleteItemCascade(
+  tx: TransactionClient,
+  itemId: string,
+): Promise<boolean> {
+  const existing = await tx.item.findUnique({
+    where: { id: itemId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    return false;
+  }
+
+  const saleLines = await tx.saleLine.findMany({
+    where: { itemId },
+    select: { id: true, saleId: true, unitToman: true },
+  });
+
+  if (saleLines.length > 0) {
+    const saleAdjustments = new Map<string, number>();
+
+    for (const line of saleLines) {
+      saleAdjustments.set(
+        line.saleId,
+        (saleAdjustments.get(line.saleId) ?? 0) + line.unitToman,
+      );
+    }
+
+    for (const [saleId, amount] of saleAdjustments) {
+      await adjustSaleTotals(tx, saleId, amount);
+    }
+
+    await tx.saleLine.deleteMany({
+      where: { id: { in: saleLines.map((line) => line.id) } },
+    });
+  }
+
+  const purchaseLines = await tx.purchaseLine.findMany({
+    where: { createdItemIds: { has: itemId } },
+    select: {
+      id: true,
+      purchaseId: true,
+      quantity: true,
+      unitToman: true,
+      feesToman: true,
+    },
+  });
+
+  if (purchaseLines.length > 0) {
+    const purchaseAdjustments = new Map<string, number>();
+
+    for (const line of purchaseLines) {
+      const adjustment = line.quantity * line.unitToman + line.feesToman;
+      purchaseAdjustments.set(
+        line.purchaseId,
+        (purchaseAdjustments.get(line.purchaseId) ?? 0) + adjustment,
+      );
+    }
+
+    for (const [purchaseId, amount] of purchaseAdjustments) {
+      await adjustPurchaseTotals(tx, purchaseId, amount);
+    }
+
+    await tx.purchaseLine.deleteMany({
+      where: { id: { in: purchaseLines.map((line) => line.id) } },
+    });
+  }
+
+  await tx.inventoryMovement.deleteMany({ where: { itemId } });
+
+  await tx.item.delete({ where: { id: itemId } });
+
+  return true;
+}
+
+export async function deleteItemsCascade(
+  tx: TransactionClient,
+  itemIds: Iterable<string>,
+) {
+  for (const itemId of new Set(itemIds)) {
+    await deleteItemCascade(tx, itemId);
+  }
+}

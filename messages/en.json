@@ -243,7 +243,16 @@
   "items": {
     "title": "Inventory Overview",
     "subtitle": "Monitor stock health, pricing, and profitability.",
-    "empty": "No items to display."
+    "empty": "No items to display.",
+    "delete": {
+      "trigger": "Delete item",
+      "title": "Delete item",
+      "description": "This will permanently remove the item and its related records.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Item deleted",
+      "error": "Unable to delete item"
+    }
   },
   "products": {
     "title": "Product catalog",
@@ -331,6 +340,13 @@
       "viewItem": "View item"
     },
     "delete": {
+      "trigger": "Delete product",
+      "title": "Delete product",
+      "description": "Deleting a product removes it from the catalog permanently.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Product deleted",
+      "error": "Unable to delete product",
       "hasItems": "Remove all inventory items for this product before deleting it."
     }
   },
@@ -598,7 +614,16 @@
     "tableCreated": "Created",
     "viewDetails": "View details",
     "emptyListTitle": "No purchases yet",
-    "emptyListBody": "Use the new purchase button to capture your first shipment."
+    "emptyListBody": "Use the new purchase button to capture your first shipment.",
+    "delete": {
+      "trigger": "Delete purchase",
+      "title": "Delete purchase",
+      "description": "Deleting a purchase removes it and all created items.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Purchase deleted",
+      "error": "Unable to delete purchase"
+    }
   },
   "sales": {
     "overviewTitle": "Sales history",
@@ -613,6 +638,15 @@
     "emptyReference": "None",
     "viewDetails": "View details",
     "emptyListTitle": "No sales yet",
-    "emptyListBody": "Use the new sale button to capture your first order."
+    "emptyListBody": "Use the new sale button to capture your first order.",
+    "delete": {
+      "trigger": "Delete sale",
+      "title": "Delete sale",
+      "description": "Deleting a sale returns its items to a listed state.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Sale deleted",
+      "error": "Unable to delete sale"
+    }
   }
 }

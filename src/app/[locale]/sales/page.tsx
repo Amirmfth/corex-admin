@@ -7,6 +7,7 @@ import { routing, type AppLocale } from '../../../../i18n/routing';
 import { formatDate } from '../../../../lib/date';
 import { getSalesList } from '../../../../lib/sales';
 import PageHeader from '../../../components/PageHeader';
+import DeleteSaleButton from '../../../components/sales/DeleteSaleButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +89,7 @@ export default async function SalesPage({ params }: SalesPageProps) {
                           <span>{t('viewDetails')}</span>
                           <ArrowRight className="size-3.5" aria-hidden />
                         </Link>
+                        <DeleteSaleButton saleId={sale.id} />
                       </div>
                     </td>
                   </tr>
