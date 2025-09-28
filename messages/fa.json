@@ -91,7 +91,7 @@
         "title": "لیست‌شده اما راکد",
         "description": "{primaryCount} لیست بالاتر از {primaryDays} روز · {secondaryCount} بیش از {secondaryDays}",
         "criticalBadge": ">{days} روز",
-      "empty": "لیست راکدی وجود ندارد."
+        "empty": "لیست راکدی وجود ندارد."
       }
     }
   },
@@ -202,6 +202,7 @@
     }
   },
   "table": {
+    "photo": "تصویر",
     "product": "محصول",
     "serial": "سریال",
     "condition": "وضعیت فیزیکی",
@@ -224,6 +225,12 @@
     "NEW": "نو",
     "USED": "دست دوم",
     "FOR_PARTS": "برای قطعات"
+  },
+  "channels": {
+    "DIRECT": "مستقیم",
+    "ONLINE": "آنلاین",
+    "WHOLESALE": "عمده‌فروشی",
+    "OTHER": "سایر"
   },
   "buttons": {
     "addItem": "افزودن کالا",
@@ -294,8 +301,8 @@
       "imagesHelper": "لینک مستقیم تصاویر محصول را اضافه کنید.",
       "imagesAdd": "افزودن تصویر",
       "imagesRemove": "حذف تصویر",
-      "specsLabel": "مشخصات (JSON)",
-      "specsHelper": "مشخصات ساختارمند را با JSON ذخیره کنید.",
+      "specsLabel": "مشخصات",
+      "specsHelper": "مشخصات را ذخیره کنید.",
       "specsValidate": "اعتبارسنجی JSON",
       "specsFormat": "قالب‌بندی",
       "specsValid": "JSON معتبر است",
@@ -305,7 +312,9 @@
       "submitting": "در حال ذخیره...",
       "createSuccess": "محصول ساخته شد",
       "updateSuccess": "محصول به‌روزرسانی شد",
-      "submitError": "ذخیره محصول انجام نشد"
+      "submitError": "ذخیره محصول انجام نشد",
+      "specsAdd": "افزودن",
+      "specsRemove": "حذف"
     },
     "detail": {
       "overviewTab": "نمای کلی",

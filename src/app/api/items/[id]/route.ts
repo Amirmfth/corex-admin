@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   }
 
   const parsed = updateItemSchema.safeParse(payload);
-  console.log(payload)
+  console.log(parsed.error)
 
   if (!parsed.success) {
     const message = parsed.error.errors.map((err) => err.message).join(', ');

@@ -169,7 +169,7 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
                   onChange={toggleAll}
                 />
               </th>
-              <th className="px-4 py-3">Photo</th>
+              <th className="px-4 py-3">{tTable('photo')}</th>
               <th className="px-4 py-3">{tTable('product')}</th>
               <th className="px-4 py-3">{tTable('serial')}</th>
               <th className="px-4 py-3">{tTable('condition')}</th>
@@ -184,7 +184,7 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
           <tbody className="divide-y divide-[var(--border)]">
             {items.map((item) => {
               const isChecked = selectedSet.has(item.id);
-              const primaryImage = item.imageUrls[0];
+              const primaryImage = item.imageUrls[0] || item.product.imageUrls[0] || null;
               const costValue = totalCost({
                 purchaseToman: item.purchaseToman,
                 feesToman: item.feesToman,

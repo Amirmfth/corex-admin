@@ -2,11 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition, useEffect } from 'react';
 import { toast } from 'sonner';
+import { ImageOff, Loader2, Search } from 'lucide-react';
 
 import type { AppLocale } from '../../../i18n/routing';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+// NOTE: removed the old Select import
 
 const DEFAULT_LINE = {
   quantity: '1',
@@ -19,6 +20,7 @@ type ProductOption = {
   name: string;
   brand: string | null;
   model: string | null;
+  image?: string | null; // optional image (for nicer menu like QuickAddItem)
 };
 
 type LineState = {
@@ -31,32 +33,194 @@ type LineState = {
 
 type PurchaseBuilderProps = {
   locale: AppLocale;
-  products: ProductOption[];
+  products: ProductOption[]; // still accepted, but no longer used for the dropdown
 };
 
-function formatOptionLabel(product: ProductOption) {
-  const parts = [product.name];
-  if (product.brand) {
-    parts.push(product.brand);
-  }
-  if (product.model) {
-    parts.push(product.model);
-  }
-  return parts.join(' - ');
+/** ------- helpers borrowed from your QuickAddItem patterns ------- **/
+function formatProductLabel(option: ProductOption) {
+  return [option.name, option.brand, option.model].filter(Boolean).join(' • ');
 }
+function formatProductMeta(option: ProductOption) {
+  return [option.brand, option.model].filter(Boolean).join(' • ');
+}
+/** ----------------------------------------------------------------- **/
 
-function createLine(products: ProductOption[]): LineState {
+function createLine(): LineState {
   const id =
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
       : Math.random().toString(36).slice(2, 10);
   return {
     id,
-    productId: products[0]?.id ?? '',
+    productId: '', // start empty so user searches & selects
     quantity: DEFAULT_LINE.quantity,
     unitToman: DEFAULT_LINE.unitToman,
     feesToman: DEFAULT_LINE.feesToman,
   };
+}
+
+/** A self-contained autocomplete for picking a product (mirrors QuickAddItem UX).  */
+/** It manages its own input/menu state and reports only the selected productId up. */
+function ProductAutocomplete(props: {
+  id: string;
+  value: string; // productId
+  onChange: (productId: string) => void;
+  disabled?: boolean;
+  placeholder: string;
+}) {
+  const { id, value, onChange, disabled, placeholder } = props;
+
+  const [productInput, setProductInput] = useState('');
+  const [productQuery, setProductQuery] = useState('');
+  const [productOptions, setProductOptions] = useState<ProductOption[]>([]);
+  const [isProductMenuOpen, setIsProductMenuOpen] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const menuCloseTimeoutRef = useRef<number | null>(null);
+
+  function clearMenuCloseTimeout() {
+    if (menuCloseTimeoutRef.current !== null) {
+      window.clearTimeout(menuCloseTimeoutRef.current);
+      menuCloseTimeoutRef.current = null;
+    }
+  }
+  useEffect(() => () => clearMenuCloseTimeout(), []);
+
+  function handleProductInputChange(val: string) {
+    setProductInput(val);
+    setProductQuery(val);
+    // reset the selected value until user picks an option
+    if (value) onChange('');
+    clearMenuCloseTimeout();
+    setIsProductMenuOpen(true);
+  }
+
+  function handleProductSelect(option: ProductOption) {
+    onChange(option.id);
+    setProductInput(formatProductLabel(option));
+    setProductQuery('');
+    setProductOptions([]);
+    clearMenuCloseTimeout();
+    setIsProductMenuOpen(false);
+  }
+
+  // fetch results with a small debounce — same idea as QuickAddItem (180ms)
+  useEffect(() => {
+    if (!isProductMenuOpen) {
+      setIsLoadingProducts(false);
+      return;
+    }
+    const controller = new AbortController();
+    let cancelled = false;
+    setIsLoadingProducts(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams();
+        const term = productQuery.trim();
+        if (term) params.set('query', term);
+        const response = await fetch(`/api/products/search?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error('Failed to load products');
+        const data = (await response.json()) as { products?: ProductOption[] };
+        if (!cancelled) setProductOptions(data.products ?? []);
+      } catch (error) {
+        if (!controller.signal.aborted && !cancelled) {
+          console.error(error);
+          if (!cancelled) setProductOptions([]);
+        }
+      } finally {
+        if (!cancelled) setIsLoadingProducts(false);
+      }
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [isProductMenuOpen, productQuery]);
+
+  // if parent gives a value externally (e.g., form reset), clear the input when emptied
+  useEffect(() => {
+    if (!value) {
+      // do not wipe typed text unless the user cleared selection;
+      // here we leave productInput as-is, which is nice UX for re-picking
+    }
+  }, [value]);
+
+  return (
+    <div className="relative">
+      <Search
+        className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--muted)]"
+        aria-hidden
+      />
+      <input
+        id={id}
+        value={productInput}
+        onChange={(e) => handleProductInputChange(e.target.value)}
+        onFocus={() => {
+          clearMenuCloseTimeout();
+          setIsProductMenuOpen(true);
+          if (!productQuery) setProductQuery('');
+        }}
+        onBlur={() => {
+          clearMenuCloseTimeout();
+          menuCloseTimeoutRef.current = window.setTimeout(() => setIsProductMenuOpen(false), 120);
+        }}
+        placeholder={placeholder}
+        className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] px-11 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+        autoComplete="off"
+        disabled={disabled}
+      />
+      {isProductMenuOpen ? (
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_20px_60px_var(--shadow-color)]">
+          {isLoadingProducts ? (
+            <div className="flex items-center justify-center gap-2 px-4 py-3 text-sm text-[var(--muted)]">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              <span>Loading...</span>
+            </div>
+          ) : productOptions.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-[var(--muted)]">No products found</p>
+          ) : (
+            <ul className="divide-y divide-[var(--border)]">
+              {productOptions.map((option) => (
+                <li key={option.id}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()} // keep focus so click doesn't close before select
+                    onClick={() => handleProductSelect(option)}
+                    className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-[var(--surface-hover)]"
+                  >
+                    <div className="flex size-10 items-center justify-center overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]">
+                      {option.image ? (
+                        <img
+                          src={option.image}
+                          alt={option.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <ImageOff className="size-4 text-[var(--muted)]" aria-hidden />
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col text-sm">
+                      <span className="font-medium text-[var(--foreground)]">
+                        {formatProductLabel(option)}
+                      </span>
+                      {formatProductMeta(option) ? (
+                        <span className="text-xs text-[var(--muted)]">
+                          {formatProductMeta(option)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export default function PurchaseBuilder({ locale, products }: PurchaseBuilderProps) {
@@ -66,9 +230,10 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
 
   const [supplierName, setSupplierName] = useState('');
   const [reference, setReference] = useState('');
-  const [lines, setLines] = useState<LineState[]>(() => [createLine(products)]);
+  const [lines, setLines] = useState<LineState[]>(() => [createLine()]);
 
-  const canSubmit = products.length > 0;
+  // keep the same gate as before, but now it's about being able to create at least one line
+  const canSubmit = true; // previously depended on products.length; the source is now remote search
 
   const totalToman = useMemo(() => {
     return lines.reduce((sum, line) => {
@@ -80,7 +245,6 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
         const safeFees = Number.isFinite(fees) ? fees : 0;
         return sum + quantity * unit + safeFees;
       }
-
       return sum;
     }, 0);
   }, [lines]);
@@ -92,7 +256,7 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
   }
 
   function handleAddLine() {
-    setLines((current) => [...current, createLine(products)]);
+    setLines((current) => [...current, createLine()]);
   }
 
   function handleRemoveLine(index: number) {
@@ -110,17 +274,12 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
       return;
     }
 
-    if (!canSubmit) {
-      toast.error(t('emptyProducts'));
-      return;
-    }
-
-    const parsedLines = [] as {
+    const parsedLines: {
       productId: string;
       quantity: number;
       unitToman: number;
       feesToman: number;
-    }[];
+    }[] = [];
 
     for (const line of lines) {
       const quantity = Number.parseInt(line.quantity, 10);
@@ -131,17 +290,14 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
         toast.error(t('productRequired'));
         return;
       }
-
       if (!Number.isFinite(quantity) || quantity <= 0) {
         toast.error(t('quantityInvalid'));
         return;
       }
-
       if (!Number.isFinite(unit) || unit < 0) {
         toast.error(t('unitInvalid'));
         return;
       }
-
       if (!Number.isFinite(fees) || fees < 0) {
         toast.error(t('feesInvalid'));
         return;
@@ -228,121 +384,121 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
             type="button"
             onClick={handleAddLine}
             className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--muted-strong)] transition hover:border-neutral-400 hover:text-[var(--foreground)] disabled:opacity-60"
-            disabled={!canSubmit || pending}
+            disabled={pending}
           >
             {t('addLine')}
           </button>
         </div>
 
-        {products.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-4 py-6 text-sm text-[var(--muted)]">
-            {t('emptyProducts')}
-          </p>
-        ) : (
-          <div className="mt-4 space-y-4">
-            {lines.map((line, index) => (
-              <div
-                key={line.id}
-                className="grid gap-4 rounded-2xl border border-[var(--border)] px-4 py-4 sm:grid-cols-[minmax(0,1fr)_120px_150px_150px_auto]"
-              >
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-medium uppercase text-[var(--muted)]"
-                    htmlFor={`product-${line.id}`}
-                  >
-                    {t('productLabel')}
-                  </label>
-                  <Select
-                    value={line.productId}
-                    onValueChange={(value) => updateLine(index, { productId: value })}
-                    disabled={pending}
-                  >
-                    <SelectTrigger id={`product-${line.id}`}>
-                      <SelectValue placeholder={t('productLabel')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {formatOptionLabel(product)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-medium uppercase text-[var(--muted)]"
-                    htmlFor={`quantity-${line.id}`}
-                  >
-                    {t('quantityLabel')}
-                  </label>
-                  <input
-                    id={`quantity-${line.id}`}
-                    type="number"
-                    min={1}
-                    value={line.quantity}
-                    onChange={(event) => updateLine(index, { quantity: event.target.value })}
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
-                    disabled={pending}
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-medium uppercase text-[var(--muted)]"
-                    htmlFor={`unit-${line.id}`}
-                  >
-                    {t('unitLabel')}
-                  </label>
-                  <input
-                    id={`unit-${line.id}`}
-                    type="number"
-                    min={0}
-                    value={line.unitToman}
-                    onChange={(event) => updateLine(index, { unitToman: event.target.value })}
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
-                    disabled={pending}
-                    required
-                  />
-                  <span className="text-xs text-[var(--muted)]">
-                    {line.unitToman !== '' ? Number(line.unitToman).toLocaleString() : ''}
+        <div className="mt-4 space-y-4">
+          {lines.map((line, index) => (
+            <div
+              key={line.id}
+              className="grid gap-4 rounded-2xl border border-[var(--border)] px-4 py-4 sm:grid-cols-[minmax(0,1fr)_120px_150px_150px_auto]"
+            >
+              {/* Product Autocomplete */}
+              <div className="flex flex-col gap-2">
+                <label
+                  className="text-xs font-medium uppercase text-[var(--muted)]"
+                  htmlFor={`product-${line.id}`}
+                >
+                  {t('productLabel')}
+                </label>
+                <ProductAutocomplete
+                  id={`product-${line.id}`}
+                  value={line.productId}
+                  onChange={(productId) => updateLine(index, { productId })}
+                  disabled={pending}
+                  placeholder={t('productLabel')}
+                />
+                {/* optional helper: show the selected product id */}
+                {line.productId ? (
+                  <span className="text-[10px] text-[var(--muted)]">
+                    Selected: {line.productId}
                   </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-medium uppercase text-[var(--muted)]"
-                    htmlFor={`fees-${line.id}`}
-                  >
-                    {t('feesLabel')}
-                  </label>
-                  <input
-                    id={`fees-${line.id}`}
-                    type="number"
-                    min={0}
-                    value={line.feesToman}
-                    onChange={(event) => updateLine(index, { feesToman: event.target.value })}
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
-                    disabled={pending}
-                  />
-                  <span className="text-xs text-[var(--muted)]">
-                    {line.feesToman !== '' ? Number(line.feesToman).toLocaleString() : ''}
-                  </span>
-                </div>
-                <div className="flex items-end justify-end">
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveLine(index)}
-                    className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)] disabled:opacity-60"
-                    disabled={lines.length === 1 || pending}
-                  >
-                    {t('removeLine')}
-                  </button>
-                </div>
+                ) : null}
               </div>
-            ))}
-            <p className="text-xs text-[var(--muted)]">{t('feesHint')}</p>
-          </div>
-        )}
+
+              {/* Quantity */}
+              <div className="flex flex-col gap-2">
+                <label
+                  className="text-xs font-medium uppercase text-[var(--muted)]"
+                  htmlFor={`quantity-${line.id}`}
+                >
+                  {t('quantityLabel')}
+                </label>
+                <input
+                  id={`quantity-${line.id}`}
+                  type="number"
+                  min={1}
+                  value={line.quantity}
+                  onChange={(event) => updateLine(index, { quantity: event.target.value })}
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+                  disabled={pending}
+                  required
+                />
+              </div>
+
+              {/* Unit */}
+              <div className="flex flex-col gap-2">
+                <label
+                  className="text-xs font-medium uppercase text-[var(--muted)]"
+                  htmlFor={`unit-${line.id}`}
+                >
+                  {t('unitLabel')}
+                </label>
+                <input
+                  id={`unit-${line.id}`}
+                  type="number"
+                  min={0}
+                  value={line.unitToman}
+                  onChange={(event) => updateLine(index, { unitToman: event.target.value })}
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+                  disabled={pending}
+                  required
+                />
+                <span className="text-xs text-[var(--muted)]">
+                  {line.unitToman !== '' ? Number(line.unitToman).toLocaleString() : ''}
+                </span>
+              </div>
+
+              {/* Fees */}
+              <div className="flex flex-col gap-2">
+                <label
+                  className="text-xs font-medium uppercase text-[var(--muted)]"
+                  htmlFor={`fees-${line.id}`}
+                >
+                  {t('feesLabel')}
+                </label>
+                <input
+                  id={`fees-${line.id}`}
+                  type="number"
+                  min={0}
+                  value={line.feesToman}
+                  onChange={(event) => updateLine(index, { feesToman: event.target.value })}
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
+                  disabled={pending}
+                />
+                <span className="text-xs text-[var(--muted)]">
+                  {line.feesToman !== '' ? Number(line.feesToman).toLocaleString() : ''}
+                </span>
+              </div>
+
+              {/* Remove */}
+              <div className="flex items-end justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleRemoveLine(index)}
+                  className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)] disabled:opacity-60"
+                  disabled={lines.length === 1 || pending}
+                >
+                  {t('removeLine')}
+                </button>
+              </div>
+            </div>
+          ))}
+          <p className="text-xs text-[var(--muted)]">{t('feesHint')}</p>
+        </div>
       </div>
 
       <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:justify-end">

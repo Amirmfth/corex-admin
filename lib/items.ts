@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { Channel, ItemCondition, ItemStatus } from '@prisma/client';
 
-import { prisma } from "./prisma";
+import { prisma } from './prisma';
 
 export const ITEMS_PAGE_SIZE = 20;
 
@@ -18,6 +18,7 @@ export type ItemsListItem = {
   product: {
     id: string;
     name: string;
+    imageUrls: string[];
     brand: string | null;
     model: string | null;
     categoryId: string | null;
@@ -45,17 +46,17 @@ export type ItemsListResult = {
   }[];
 };
 
-function buildSearchWhere(term: string): Prisma.ItemWhereInput["OR"] | undefined {
+function buildSearchWhere(term: string): Prisma.ItemWhereInput['OR'] | undefined {
   const normalized = term.trim();
   if (!normalized) {
     return undefined;
   }
 
   return [
-    { serial: { contains: normalized, mode: "insensitive" } },
-    { product: { name: { contains: normalized, mode: "insensitive" } } },
-    { product: { model: { contains: normalized, mode: "insensitive" } } },
-    { product: { brand: { contains: normalized, mode: "insensitive" } } },
+    { serial: { contains: normalized, mode: 'insensitive' } },
+    { product: { name: { contains: normalized, mode: 'insensitive' } } },
+    { product: { model: { contains: normalized, mode: 'insensitive' } } },
+    { product: { brand: { contains: normalized, mode: 'insensitive' } } },
   ];
 }
 
@@ -94,7 +95,7 @@ export async function getItemsList({
   const [items, total, categories] = await Promise.all([
     prisma.item.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       skip,
       take: ITEMS_PAGE_SIZE,
       include: {
@@ -102,6 +103,7 @@ export async function getItemsList({
           select: {
             id: true,
             name: true,
+            imageUrls: true,
             brand: true,
             model: true,
             categoryId: true,
@@ -116,7 +118,7 @@ export async function getItemsList({
     }),
     prisma.item.count({ where }),
     prisma.category.findMany({
-      orderBy: { name: "asc" },
+      orderBy: { name: 'asc' },
       select: {
         id: true,
         name: true,
@@ -130,6 +132,7 @@ export async function getItemsList({
       product: {
         id: item.product.id,
         name: item.product.name,
+        imageUrls: item.product.imageUrls,
         brand: item.product.brand,
         model: item.product.model,
         categoryId: item.product.categoryId,
@@ -173,7 +176,7 @@ export async function getItemDetail(id: string) {
         },
       },
       movements: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       },
     },
   });
@@ -187,17 +190,17 @@ export async function getSellableItems(search?: string) {
   if (search && search.trim()) {
     const term = search.trim();
     where.OR = [
-      { serial: { contains: term, mode: "insensitive" } },
-      { product: { name: { contains: term, mode: "insensitive" } } },
-      { product: { brand: { contains: term, mode: "insensitive" } } },
-      { product: { model: { contains: term, mode: "insensitive" } } },
+      { serial: { contains: term, mode: 'insensitive' } },
+      { product: { name: { contains: term, mode: 'insensitive' } } },
+      { product: { brand: { contains: term, mode: 'insensitive' } } },
+      { product: { model: { contains: term, mode: 'insensitive' } } },
     ];
   }
 
   return prisma.item.findMany({
     where,
     take: 20,
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       serial: true,

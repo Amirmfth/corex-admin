@@ -202,6 +202,7 @@
     }
   },
   "table": {
+    "photo": "Photo",
     "product": "Product",
     "serial": "Serial",
     "condition": "Condition",
@@ -224,6 +225,12 @@
     "NEW": "New",
     "USED": "Used",
     "FOR_PARTS": "For parts"
+  },
+  "channels": {
+    "DIRECT": "Direct",
+    "ONLINE": "Online",
+    "WHOLESALE": "Wholesale",
+    "OTHER": "Other"
   },
   "buttons": {
     "addItem": "Add Item",
@@ -304,7 +311,9 @@
       "submitting": "Saving...",
       "createSuccess": "Product created",
       "updateSuccess": "Product updated",
-      "submitError": "Unable to save product"
+      "submitError": "Unable to save product",
+      "specsAdd": "Add",
+      "specsRemove": "Remove"
     },
     "detail": {
       "overviewTab": "Overview",

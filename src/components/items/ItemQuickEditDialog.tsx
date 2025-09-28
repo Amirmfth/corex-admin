@@ -190,7 +190,10 @@ export default function ItemQuickEditDialog({
           <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-[var(--muted-strong)]" htmlFor="quick-status">
+                <label
+                  className="text-sm font-medium text-[var(--muted-strong)]"
+                  htmlFor="quick-status"
+                >
                   {t('status')}
                 </label>
                 <Select
@@ -210,7 +213,10 @@ export default function ItemQuickEditDialog({
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-[var(--muted-strong)]" htmlFor="quick-listed-channel">
+                <label
+                  className="text-sm font-medium text-[var(--muted-strong)]"
+                  htmlFor="quick-listed-channel"
+                >
                   {t('listedChannel')}
                 </label>
                 <Select
@@ -234,7 +240,10 @@ export default function ItemQuickEditDialog({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-[var(--muted-strong)]" htmlFor="quick-listed-price">
+                <label
+                  className="text-sm font-medium text-[var(--muted-strong)]"
+                  htmlFor="quick-listed-price"
+                >
                   {t('listedPrice')}
                 </label>
                 <input
@@ -247,9 +256,15 @@ export default function ItemQuickEditDialog({
                   onChange={(event) => updateForm('listedPrice', event.target.value)}
                   className="w-full rounded-xl border border-[var(--border)] px-3 py-2 shadow-sm focus:border-[var(--accent)] focus:outline-none"
                 />
+                <span className="text-xs text-[var(--muted)]">
+                  {form.listedPrice !== '' ? Number(form.listedPrice).toLocaleString() : ''}
+                </span>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-[var(--muted-strong)]" htmlFor="quick-sale-channel">
+                <label
+                  className="text-sm font-medium text-[var(--muted-strong)]"
+                  htmlFor="quick-sale-channel"
+                >
                   {t('saleChannel')}
                 </label>
                 <Select
@@ -273,7 +288,10 @@ export default function ItemQuickEditDialog({
 
             {form.status === ItemStatus.SOLD ? (
               <div className="space-y-1">
-                <label className="text-sm font-medium text-[var(--muted-strong)]" htmlFor="quick-sold-price">
+                <label
+                  className="text-sm font-medium text-[var(--muted-strong)]"
+                  htmlFor="quick-sold-price"
+                >
                   {t('soldPrice')}
                 </label>
                 <input
@@ -287,6 +305,9 @@ export default function ItemQuickEditDialog({
                   className="w-full rounded-xl border border-[var(--border)] px-3 py-2 shadow-sm focus:border-[var(--accent)] focus:outline-none"
                   required
                 />
+                <span className="text-xs text-[var(--muted)]">
+                  {form.soldPrice !== '' ? Number(form.soldPrice).toLocaleString() : ''}
+                </span>
               </div>
             ) : null}
 

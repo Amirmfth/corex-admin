@@ -227,6 +227,8 @@ export default function ProductForm({ mode, productId, initialValues, redirectTo
         formatLabel={t("specsFormat")}
         validMessage={t("specsValid")}
         invalidMessage={t("specsInvalid")}
+        addLabel={t("specsAdd")}
+        removeLabel={t("specsRemove")}
       />
 
       <div className="flex justify-end">

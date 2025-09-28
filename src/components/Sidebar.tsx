@@ -86,7 +86,7 @@ export default function Sidebar({
 
   const isRTL = dir === 'rtl';
   const closedW = 72; // px
-  const openW = 288; // px
+  const openW = 248; // px
 
   const toggle = () => setCollapsed((v) => !v);
 

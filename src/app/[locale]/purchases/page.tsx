@@ -53,12 +53,12 @@ export default async function PurchasesPage({ params }: PurchasesPageProps) {
           <table className="min-w-full divide-y divide-[var(--border)] text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
               <tr>
-                <th className="px-4 py-3 text-left font-medium">{t('tableSupplier')}</th>
-                <th className="px-4 py-3 text-left font-medium">{t('tableReference')}</th>
-                <th className="px-4 py-3 text-left font-medium">{t('tableTotalItems')}</th>
-                <th className="px-4 py-3 text-left font-medium">{t('tableReceived')}</th>
-                <th className="px-4 py-3 text-left font-medium">{t('tableCreated')}</th>
-                <th className="px-4 py-3 text-left font-medium" />
+                <th className="px-4 py-3 text-right font-medium">{t('tableSupplier')}</th>
+                <th className="px-4 py-3 text-right font-medium">{t('tableReference')}</th>
+                <th className="px-4 py-3 text-right font-medium">{t('tableTotalItems')}</th>
+                <th className="px-4 py-3 text-right font-medium">{t('tableReceived')}</th>
+                <th className="px-4 py-3 text-right font-medium">{t('tableCreated')}</th>
+                <th className="px-4 py-3 text-right font-medium" />
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">

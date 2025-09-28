@@ -68,14 +68,14 @@ export const updateItemSchema = z
     feesToman: tomanInt.optional(),
     refurbToman: tomanInt.optional(),
     location: optionalString('location'),
-    listedChannel: z.nativeEnum(Channel).optional(),
-    listedPriceToman: tomanInt.optional(),
+    listedChannel: z.nativeEnum(Channel).optional().nullable(),
+    listedPriceToman: tomanInt.optional().nullable(),
     listedAt: optionalDateInput,
     soldAt: optionalDateInput,
-    soldPriceToman: tomanInt.optional(),
+    soldPriceToman: tomanInt.optional().nullable(),
     saleChannel: z.nativeEnum(Channel).optional(),
     buyerName: optionalString('buyerName'),
-    notes: z.string().optional(),
+    notes: z.string().optional().nullable(),
     images: imagesArray.optional(),
   })
   .superRefine((data, ctx) => {

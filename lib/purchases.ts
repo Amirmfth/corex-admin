@@ -184,99 +184,102 @@ export async function receivePurchase(purchaseId: string): Promise<{
   alreadyReceived: boolean;
   createdItems: string[];
 }> {
-  return prisma.$transaction(async (tx) => {
-    const purchase = await tx.purchase.findUnique({
-      where: { id: purchaseId },
-      include: {
-        lines: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                brand: true,
-                model: true,
+  return prisma.$transaction(
+    async (tx) => {
+      const purchase = await tx.purchase.findUnique({
+        where: { id: purchaseId },
+        include: {
+          lines: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  brand: true,
+                  model: true,
+                },
               },
             },
+            orderBy: { id: 'asc' },
           },
-          orderBy: { id: 'asc' },
         },
-      },
-      lock: { mode: 'ForUpdate' },
-    });
+        // lock: { mode: 'ForUpdate' },
+      });
 
-    if (!purchase) {
-      throw new Error('Purchase not found');
-    }
-
-    const hasExistingItems = purchase.lines.some((line) => line.createdItemIds.length > 0);
-    if (hasExistingItems) {
-      return { purchase, alreadyReceived: true, createdItems: [] };
-    }
-
-    const createdItemIds: string[] = [];
-
-    for (const line of purchase.lines) {
-      const idsForLine: string[] = [];
-
-      for (let index = 0; index < line.quantity; index += 1) {
-        const serial = `${purchase.id}-${line.id}-${index + 1}-${randomUUID()}`;
-        const feesToman = computeFeeShare(line.feesToman, line.quantity, index);
-
-        const item = await tx.item.create({
-          data: {
-            productId: line.productId,
-            serial,
-            condition: ItemCondition.NEW,
-            status: ItemStatus.IN_STOCK,
-            purchaseToman: line.unitToman,
-            feesToman,
-            refurbToman: 0,
-          },
-        });
-
-        await tx.inventoryMovement.create({
-          data: {
-            itemId: item.id,
-            movement: MovementType.PURCHASE_IN,
-            qty: 1,
-            reference: purchase.reference ?? purchase.id,
-          },
-        });
-
-        idsForLine.push(item.id);
-        createdItemIds.push(item.id);
+      if (!purchase) {
+        throw new Error('Purchase not found');
       }
 
-      await tx.purchaseLine.update({
-        where: { id: line.id },
-        data: { createdItemIds: idsForLine },
-      });
-    }
+      const hasExistingItems = purchase.lines.some((line) => line.createdItemIds.length > 0);
+      if (hasExistingItems) {
+        return { purchase, alreadyReceived: true, createdItems: [] };
+      }
 
-    const refreshed = await tx.purchase.findUnique({
-      where: { id: purchaseId },
-      include: {
-        lines: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                brand: true,
-                model: true,
+      const createdItemIds: string[] = [];
+
+      for (const line of purchase.lines) {
+        const idsForLine: string[] = [];
+
+        for (let index = 0; index < line.quantity; index += 1) {
+          const serial = `${purchase.id.slice(0, 4)}-${line.id.slice(0, 4)}-${index + 1}-${randomUUID().slice(0, 4)}`;
+          const feesToman = computeFeeShare(line.feesToman, line.quantity, index);
+
+          const item = await tx.item.create({
+            data: {
+              productId: line.productId,
+              serial,
+              condition: ItemCondition.NEW,
+              status: ItemStatus.IN_STOCK,
+              purchaseToman: line.unitToman,
+              feesToman,
+              refurbToman: 0,
+            },
+          });
+
+          await tx.inventoryMovement.create({
+            data: {
+              itemId: item.id,
+              movement: MovementType.PURCHASE_IN,
+              qty: 1,
+              reference: purchase.reference ?? purchase.id,
+            },
+          });
+
+          idsForLine.push(item.id);
+          createdItemIds.push(item.id);
+        }
+
+        await tx.purchaseLine.update({
+          where: { id: line.id },
+          data: { createdItemIds: idsForLine },
+        });
+      }
+
+      const refreshed = await tx.purchase.findUnique({
+        where: { id: purchaseId },
+        include: {
+          lines: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  brand: true,
+                  model: true,
+                },
               },
             },
+            orderBy: { id: 'asc' },
           },
-          orderBy: { id: 'asc' },
         },
-      },
-    });
+      });
 
-    if (!refreshed) {
-      throw new Error('Purchase not found after receiving');
-    }
+      if (!refreshed) {
+        throw new Error('Purchase not found after receiving');
+      }
 
-    return { purchase: refreshed, alreadyReceived: false, createdItems: createdItemIds };
-  });
+      return { purchase: refreshed, alreadyReceived: false, createdItems: createdItemIds };
+    },
+    { timeout: 20000, maxWait: 10000 },
+  );
 }
