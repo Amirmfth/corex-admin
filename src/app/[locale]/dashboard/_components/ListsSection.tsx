@@ -32,10 +32,10 @@ export default async function ListsSection({ locale }: ListsSectionProps) {
   ]);
 
   const agingWarningCount = agingSummary.buckets
-    .filter((bucket) => bucket.rangeStart > agingWatchlist.warningThreshold)
+    .filter((bucket) => bucket.minDays > agingWatchlist.warningThreshold)
     .reduce((total, bucket) => total + bucket.count, 0);
   const agingCriticalCount = agingSummary.buckets
-    .filter((bucket) => bucket.rangeStart > agingWatchlist.criticalThreshold)
+    .filter((bucket) => bucket.minDays > agingWatchlist.criticalThreshold)
     .reduce((total, bucket) => total + bucket.count, 0);
 
   const stalePrimaryCount = stalePrimary.length;

@@ -17,6 +17,9 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  YAxisProps,
+  XAxisProps,
+  TooltipProps,
 } from 'recharts';
 
 import { useLocale } from 'next-intl';
@@ -67,7 +70,8 @@ function useChartFormatters() {
     percentFormatter,
     dateFormatter,
     monthFormatter,
-    tomanFormatter: (value: number) => formatToman(Math.round(value), intlLocale as 'fa-IR' | 'en-US'),
+    tomanFormatter: (value: number) =>
+      formatToman(Math.round(value), intlLocale as 'fa-IR' | 'en-US'),
   };
 }
 
@@ -93,7 +97,9 @@ export function DateXAxis({ variant = 'date', ...props }: DateXAxisProps) {
       tickFormatter={(value: TooltipValueType) => {
         if (!value) return '';
         const dateValue = new Date(String(value));
-        return variant === 'month' ? monthFormatter.format(dateValue) : dateFormatter.format(dateValue);
+        return variant === 'month'
+          ? monthFormatter.format(dateValue)
+          : dateFormatter.format(dateValue);
       }}
     />
   );
@@ -113,7 +119,9 @@ export function CurrencyTooltip({ variant = 'date', ...props }: CurrencyTooltipP
       labelFormatter={(value) => {
         if (!value) return '';
         const dateValue = new Date(String(value));
-        return variant === 'month' ? monthFormatter.format(dateValue) : dateFormatter.format(dateValue);
+        return variant === 'month'
+          ? monthFormatter.format(dateValue)
+          : dateFormatter.format(dateValue);
       }}
     />
   );

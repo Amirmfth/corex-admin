@@ -1,11 +1,11 @@
-import { Prisma } from "@prisma/client";
-import { NextResponse } from "next/server";
-import { getTranslations } from "next-intl/server";
+import { Prisma } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { getTranslations } from 'next-intl/server';
 
-import { resolveRequestLocale } from "../../../../../lib/api-locale";
-import { rebuildCategorySubtreePaths } from "../../../../../lib/category-path";
-import { prisma } from "../../../../../lib/prisma";
-import { updateCategorySchema } from "../../../../../lib/validation.category";
+import { resolveRequestLocale } from '../../../../../lib/api-locale';
+import { rebuildCategorySubtreePaths } from '../../../../../lib/category-path';
+import { prisma } from '../../../../../lib/prisma';
+import { updateCategorySchema } from '../../../../../lib/validation.category';
 import {
   BadRequestError,
   NotFoundError,
@@ -14,16 +14,16 @@ import {
   generateUniqueCategorySlug,
   handleApiError,
   parseJsonBody,
-} from "../_utils";
+} from '../_utils';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const categoryId = params.id;
+  const { id: categoryId } = await params;
 
   try {
     const payload = await parseJsonBody(request, updateCategorySchema);
@@ -32,10 +32,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       const existing = await tx.category.findUnique({ where: { id: categoryId } });
 
       if (!existing) {
-        throw new NotFoundError("Category not found");
+        throw new NotFoundError('Category not found');
       }
 
-      const data: Prisma.CategoryUpdateInput = {};
+      const data: Prisma.CategoryUncheckedUpdateInput = {};
       let shouldRebuildPaths = false;
 
       if (payload.name && payload.name !== existing.name) {
@@ -76,7 +76,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         const refreshed = await tx.category.findUnique({ where: { id: categoryId } });
 
         if (!refreshed) {
-          throw new NotFoundError("Category not found");
+          throw new NotFoundError('Category not found');
         }
 
         return refreshed;
@@ -92,16 +92,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(request: Request, { params }: RouteParams) {
-  const categoryId = params.id;
+  const {id:categoryId} = await params;
 
   try {
     const locale = resolveRequestLocale(request);
-    const t = await getTranslations({ locale, namespace: "categories" });
+    const t = await getTranslations({ locale, namespace: 'categories' });
     const result = await prisma.$transaction(async (tx) => {
       const existing = await tx.category.findUnique({ where: { id: categoryId } });
 
       if (!existing) {
-        throw new NotFoundError("Category not found");
+        throw new NotFoundError('Category not found');
       }
 
       const [childCount, productCount] = await Promise.all([
@@ -110,16 +110,16 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       ]);
 
       if (childCount > 0) {
-        throw new BadRequestError(t("delete.disabledChildren"));
+        throw new BadRequestError(t('delete.disabledChildren'));
       }
 
       if (productCount > 0) {
-        throw new BadRequestError(t("delete.disabledProducts", { count: productCount }));
+        throw new BadRequestError(t('delete.disabledProducts', { count: productCount }));
       }
 
       await tx.category.delete({ where: { id: categoryId } });
 
-      return { message: "Category deleted" };
+      return { message: 'Category deleted' };
     });
 
     return NextResponse.json(result);

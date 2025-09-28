@@ -1,21 +1,17 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from '@prisma/client';
 
-type CategoryDelegate =
-  | Pick<PrismaClient, "category">
-  | Pick<Prisma.TransactionClient, "category">;
+type CategoryDelegate = Pick<PrismaClient, 'category'> | Pick<Prisma.TransactionClient, 'category'>;
 
-export async function buildCategoryPath(
-  nodeId: string,
-  prisma: CategoryDelegate
-): Promise<string> {
+export async function buildCategoryPath(nodeId: string, prisma: CategoryDelegate): Promise<string> {
   const segments: string[] = [];
   let currentId: string | null = nodeId;
 
   while (currentId) {
-    const category = await prisma.category.findUnique({
-      where: { id: currentId },
-      select: { slug: true, parentId: true },
-    });
+    const category: { slug: string; parentId: string | null } | null =
+      await prisma.category.findUnique({
+        where: { id: currentId },
+        select: { slug: true, parentId: true },
+      });
 
     if (!category) {
       throw new Error(`Category with id "${currentId}" not found`);
@@ -25,12 +21,12 @@ export async function buildCategoryPath(
     currentId = category.parentId;
   }
 
-  return segments.reverse().join("/");
+  return segments.reverse().join('/');
 }
 
 export async function rebuildCategorySubtreePaths(
   nodeId: string,
-  prisma: CategoryDelegate
+  prisma: CategoryDelegate,
 ): Promise<void> {
   const queue: string[] = [nodeId];
 

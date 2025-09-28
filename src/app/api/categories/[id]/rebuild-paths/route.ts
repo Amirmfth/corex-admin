@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-import { rebuildCategorySubtreePaths } from "../../../../../../lib/category-path";
-import { prisma } from "../../../../../../lib/prisma";
-import { handleApiError, NotFoundError } from "../../_utils";
+import { rebuildCategorySubtreePaths } from '../../../../../../lib/category-path';
+import { prisma } from '../../../../../../lib/prisma';
+import { handleApiError, NotFoundError } from '../../_utils';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export async function POST(req, { params }: RouteParams) {
-  const categoryId = params.id;
+export async function POST(req:Request, { params }: RouteParams) {
+  const { id: categoryId } = await params;
 
   try {
     const exists = await prisma.category.findUnique({
@@ -20,7 +20,7 @@ export async function POST(req, { params }: RouteParams) {
     });
 
     if (!exists) {
-      throw new NotFoundError("Category not found");
+      throw new NotFoundError('Category not found');
     }
 
     await prisma.$transaction(async (tx) => {
@@ -30,7 +30,7 @@ export async function POST(req, { params }: RouteParams) {
     const category = await prisma.category.findUnique({ where: { id: categoryId } });
 
     return NextResponse.json({
-      message: "Category paths rebuilt",
+      message: 'Category paths rebuilt',
       category,
     });
   } catch (error) {

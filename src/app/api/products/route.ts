@@ -92,7 +92,7 @@ export async function POST(request: Request) {
         brand: payload.brand ?? null,
         model: payload.model ?? null,
         categoryId: payload.categoryId ?? null,
-        specsJson: payload.specsJson as Prisma.JsonValue | undefined,
+        specsJson: payload.specsJson as Prisma.InputJsonValue | undefined,
         imageUrls: payload.imageUrls ?? [],
       },
       include: {

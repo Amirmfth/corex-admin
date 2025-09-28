@@ -11,12 +11,11 @@ import {
 import { cache as reactCache } from 'react';
 
 import { getBusinessRulesSettings, buildAgingBucketDefinitions } from '@/lib/app-settings';
+
 import { prisma } from './prisma';
 
 const cache: <T extends (...args: any[]) => any>(fn: T) => T =
-  typeof reactCache === 'function'
-    ? reactCache
-    : ((fn) => fn);
+  typeof reactCache === 'function' ? reactCache : (fn) => fn;
 
 function serializeFilter(value: unknown): string {
   if (value === null || typeof value !== 'object') {
@@ -42,17 +41,9 @@ function createFilterKey(namespace: string, filter?: unknown): string {
   return `${namespace}:${serializeFilter(filter)}`;
 }
 
-const ACTIVE_STATUSES: ItemStatus[] = [
-  ItemStatus.IN_STOCK,
-  ItemStatus.LISTED,
-  ItemStatus.RESERVED,
-];
+const ACTIVE_STATUSES: ItemStatus[] = [ItemStatus.IN_STOCK, ItemStatus.LISTED, ItemStatus.RESERVED];
 
-const INVENTORY_STATUS_KEYS = [
-  ItemStatus.IN_STOCK,
-  ItemStatus.LISTED,
-  ItemStatus.RESERVED,
-] as const;
+const INVENTORY_STATUS_KEYS = [ItemStatus.IN_STOCK, ItemStatus.LISTED, ItemStatus.RESERVED];
 
 type InventoryStatusKey = (typeof INVENTORY_STATUS_KEYS)[number];
 
@@ -214,10 +205,13 @@ function computeCost(item: {
 }
 
 function createEmptyStatusSummary(): Record<InventoryStatusKey, StatusSummary> {
-  return INVENTORY_STATUS_KEYS.reduce((acc, status) => {
-    acc[status] = { count: 0, totalCostT: 0 };
-    return acc;
-  }, {} as Record<InventoryStatusKey, StatusSummary>);
+  return INVENTORY_STATUS_KEYS.reduce(
+    (acc, status) => {
+      acc[status] = { count: 0, totalCostT: 0 };
+      return acc;
+    },
+    {} as Record<InventoryStatusKey, StatusSummary>,
+  );
 }
 
 export async function getInventoryBreakdown(): Promise<InventoryBreakdown> {
@@ -270,9 +264,7 @@ export async function getInventoryBreakdown(): Promise<InventoryBreakdown> {
     row.statuses[status].totalCostT += cost;
   });
 
-  const sortedRows = Array.from(categoryMap.values()).sort(
-    (a, b) => b.totalCostT - a.totalCostT,
-  );
+  const sortedRows = Array.from(categoryMap.values()).sort((a, b) => b.totalCostT - a.totalCostT);
 
   const topRows = sortedRows.slice(0, 10);
   const otherRows = sortedRows.slice(10);
@@ -348,7 +340,7 @@ export async function getChannelMix({ from, to }: ChannelMixRequest): Promise<Ch
       count: entry._count._all,
       revenueT: entry._sum.soldPriceToman ?? 0,
     }))
-    .sort((a, b) => b.revenueT - a.revenueT);
+    .sort((a, b) => b.revenueT - a.revenueT) as ChannelMixEntry[];
 }
 
 export async function getTopProductsByProfit({
@@ -418,9 +410,7 @@ export async function getTopProductsByProfit({
     let medianSoldPriceT = 0;
     if (sortedPrices.length > 0) {
       if (sortedPrices.length % 2 === 0) {
-        medianSoldPriceT = Math.round(
-          (sortedPrices[mid - 1]! + sortedPrices[mid]!) / 2,
-        );
+        medianSoldPriceT = Math.round((sortedPrices[mid - 1]! + sortedPrices[mid]!) / 2);
       } else {
         medianSoldPriceT = sortedPrices[mid]!;
       }
@@ -436,9 +426,7 @@ export async function getTopProductsByProfit({
     } satisfies TopProductByProfit;
   });
 
-  return results
-    .sort((a, b) => b.totalProfitT - a.totalProfitT)
-    .slice(0, limit);
+  return results.sort((a, b) => b.totalProfitT - a.totalProfitT).slice(0, limit);
 }
 
 export async function getRepairRoi({ from, to }: RepairRoiRequest): Promise<RepairRoiSummary> {
@@ -1042,7 +1030,9 @@ export async function getAgingWatchlist(): Promise<{
   const watchlist = items
     .map((item) => {
       const days = differenceInCalendarDays(now, item.acquiredAt);
-      const productParts = [item.product?.brand, item.product?.name, item.product?.model].filter(Boolean);
+      const productParts = [item.product?.brand, item.product?.name, item.product?.model].filter(
+        Boolean,
+      );
       const productName = productParts.join(' ');
       return {
         id: item.id,
@@ -1097,7 +1087,9 @@ export async function getStaleListed({ days }: { days: number }): Promise<StaleL
   });
 
   return items.map((item) => {
-    const productParts = [item.product?.brand, item.product?.name, item.product?.model].filter(Boolean);
+    const productParts = [item.product?.brand, item.product?.name, item.product?.model].filter(
+      Boolean,
+    );
     const productName = productParts.join(' ');
     const listedAt = item.listedAt ?? now;
     const daysListed = differenceInCalendarDays(now, listedAt);

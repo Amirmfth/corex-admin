@@ -1,16 +1,17 @@
-import type { Prisma } from "@prisma/client";
-import { NextResponse } from "next/server";
-import { getTranslations } from "next-intl/server";
+import type { Prisma } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { getTranslations } from 'next-intl/server';
 
-import { resolveRequestLocale } from "../../../../../lib/api-locale";
-import { prisma } from "../../../../../lib/prisma";
-import { updateProductSchema } from "../../../../../lib/validation.product";
-import { BadRequestError, NotFoundError, handleApiError, parseJsonBody } from "../_utils";
+import { resolveRequestLocale } from '../../../../../lib/api-locale';
+import { prisma } from '../../../../../lib/prisma';
+import { updateProductSchema } from '../../../../../lib/validation.product';
+import { BadRequestError, NotFoundError, handleApiError, parseJsonBody } from '../_utils';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: { select: { id: true, name: true, slug: true, path: true } },
         _count: { select: { items: true } },
@@ -18,13 +19,13 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     });
 
     if (!product) {
-      throw new NotFoundError("Product not found");
+      throw new NotFoundError('Product not found');
     }
 
     const soldItems = await prisma.item.findMany({
-      where: { productId: params.id, soldAt: { not: null } },
+      where: { productId: id, soldAt: { not: null } },
       select: { id: true, soldAt: true, soldPriceToman: true },
-      orderBy: { soldAt: "desc" },
+      orderBy: { soldAt: 'desc' },
       take: 25,
     });
 
@@ -34,17 +35,18 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const payload = await parseJsonBody(request, updateProductSchema);
 
     if (Object.keys(payload).length === 0) {
-      throw new BadRequestError("Request body cannot be empty");
+      throw new BadRequestError('Request body cannot be empty');
     }
 
-    const data: Prisma.ProductUpdateInput = {};
+    const data: Prisma.ProductUncheckedUpdateInput = {};
 
-    if (payload.name !== undefined) {
+    if (payload.name !== undefined && payload.name !== null) {
       data.name = payload.name;
     }
 
@@ -61,7 +63,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     if (payload.specsJson !== undefined) {
-      data.specsJson = payload.specsJson as Prisma.JsonValue;
+      data.specsJson = payload.specsJson as Prisma.InputJsonValue;
     }
 
     if (payload.imageUrls !== undefined) {
@@ -69,7 +71,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data,
       include: {
         category: { select: { id: true, name: true, slug: true, path: true } },
@@ -83,24 +85,25 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const locale = resolveRequestLocale(request);
-    const t = await getTranslations({ locale, namespace: "products" });
+    const t = await getTranslations({ locale, namespace: 'products' });
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, _count: { select: { items: true } } },
     });
 
     if (!product) {
-      throw new NotFoundError("Product not found");
+      throw new NotFoundError('Product not found');
     }
 
     if (product._count.items > 0) {
-      throw new BadRequestError(t("delete.hasItems"));
+      throw new BadRequestError(t('delete.hasItems'));
     }
 
-    await prisma.product.delete({ where: { id: params.id } });
+    await prisma.product.delete({ where: { id } });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

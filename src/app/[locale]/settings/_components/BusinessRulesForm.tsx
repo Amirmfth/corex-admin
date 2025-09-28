@@ -1,22 +1,25 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useCallback, type ReactNode } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import type { BusinessRulesSettings } from '@/lib/app-settings';
+
 import { updateBusinessRules } from '../actions';
-import {
-  businessRulesSchema,
-  type BusinessRulesInput,
-} from '../schemas';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { businessRulesSchema, type BusinessRulesInput } from '../schemas';
 
 const buttonClasses =
   'inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-foreground)] shadow transition hover:bg-[var(--accent-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-70';
 
-function FormRow({ label, description, children, error }: {
+function FormRow({
+  label,
+  description,
+  children,
+  error,
+}: {
   label: string;
   description?: string;
   children: ReactNode;
@@ -34,16 +37,22 @@ function FormRow({ label, description, children, error }: {
   );
 }
 
-export default function BusinessRulesForm({ defaultValues }: { defaultValues: BusinessRulesSettings }) {
+export default function BusinessRulesForm({
+  defaultValues,
+}: {
+  defaultValues: BusinessRulesSettings;
+}) {
   const t = useTranslations('settings.business');
   const form = useForm<BusinessRulesInput>({
     defaultValues,
     resolver: zodResolver(businessRulesSchema),
   });
 
-  const thresholds = form.watch('agingThresholds');
-  const marginValue = form.watch('minimumMarginPercent');
-  const staleValue = form.watch('staleListingThresholdDays');
+  const thresholds = form.watch().agingThresholds;
+  const marginValue = form.watch().minimumMarginPercent;
+  const staleValue = form.watch().staleListingThresholdDays;
+  const INDICES = [0, 1, 2] as const;
+  type Index = (typeof INDICES)[number];
 
   const onSubmit = useCallback(
     async (values: BusinessRulesInput) => {
@@ -70,27 +79,24 @@ export default function BusinessRulesForm({ defaultValues }: { defaultValues: Bu
         error={form.formState.errors['agingThresholds']?.message}
       >
         <div className="flex flex-wrap gap-3">
-          {thresholds.map((value, index) => (
+          {INDICES.map((index: Index) => (
             <div key={index} className="flex flex-col gap-1">
               <input
                 type="number"
                 min={1}
                 max={720}
-                value={value}
+                value={thresholds[index]}
                 onChange={(event) =>
-                  form.setValue(
-                    `agingThresholds.${index}` as const,
-                    Number(event.target.value),
-                  )
+                  form.setValue(`agingThresholds.${index}` as const, Number(event.target.value))
                 }
                 className="w-24 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface)]"
               />
               <span className="text-xs text-[var(--muted)]">
                 {t('agingThresholds.item', { index: index + 1 })}
               </span>
-              {form.formState.errors[`agingThresholds.${index}`]?.message ? (
+              {form.formState.errors.agingThresholds?.[index]?.message ? (
                 <span className="text-xs text-red-500">
-                  {form.formState.errors[`agingThresholds.${index}`]?.message}
+                  {form.formState.errors.agingThresholds?.[index]?.message}
                 </span>
               ) : null}
             </div>

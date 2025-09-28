@@ -153,15 +153,12 @@ export default function ReportsDashboard({
       }).format(minimumMarginPercent),
     [intlLocale, minimumMarginPercent],
   );
-  const renderMarginPoint = useCallback(
-    (props: any) => {
-      const { cx, cy, payload } = props;
-      const point = payload as PriceMarginPoint;
-      const fill = point.isBelowMinimumMargin ? '#f97316' : '#0ea5e9';
-      return <circle cx={cx} cy={cy} r={5} fill={fill} stroke="var(--surface)" strokeWidth={1.5} />;
-    },
-    [],
-  );
+  const renderMarginPoint = useCallback((props: any) => {
+    const { cx, cy, payload } = props;
+    const point = payload as PriceMarginPoint;
+    const fill = point.isBelowMinimumMargin ? '#f97316' : '#0ea5e9';
+    return <circle cx={cx} cy={cy} r={5} fill={fill} stroke="var(--surface)" strokeWidth={1.5} />;
+  }, []);
 
   const channelPieData = useMemo(
     () =>
@@ -174,7 +171,8 @@ export default function ReportsDashboard({
     [data.channelMix],
   );
 
-  const inventoryStatusKeys = Object.keys(STATUS_COLORS) as (keyof typeof STATUS_COLORS)[];
+  const inventoryStatusKeys = Object.keys(STATUS_COLORS) as Array<keyof InventoryByStatusEntry['statuses']>;
+
 
   const productColumns: ColumnDef<ProductProfitEntry>[] = useMemo(
     () => [
@@ -452,8 +450,20 @@ export default function ReportsDashboard({
                   <CurrencyYAxis />
                   <CurrencyTooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="rolling30" stroke="#2563eb" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="rolling60" stroke="#ef4444" strokeWidth={2} dot={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="rolling30"
+                    stroke="#2563eb"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="rolling60"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    dot={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -477,7 +487,13 @@ export default function ReportsDashboard({
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={channelPieData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={110}>
+                    <Pie
+                      data={channelPieData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={60}
+                      outerRadius={110}
+                    >
                       {channelPieData.map((entry) => (
                         <Cell key={entry.name} fill={entry.color} stroke="var(--surface)" />
                       ))}
@@ -552,9 +568,15 @@ export default function ReportsDashboard({
                       fill="#8b5cf6"
                       radius={[12, 12, 0, 0]}
                       cursor="pointer"
-                      onClick={({ payload }) => handleCategoryClick(payload as CategoryInventoryEntry)}
+                      onClick={({ payload }) =>
+                        handleCategoryClick(payload as CategoryInventoryEntry)
+                      }
                     >
-                      <LabelList dataKey="value" position="top" formatter={(value: number) => formatCurrency(intlLocale, value)} />
+                      <LabelList
+                        dataKey="value"
+                        position="top"
+                        formatter={(value: number) => formatCurrency(intlLocale, value)}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -598,7 +620,11 @@ export default function ReportsDashboard({
                     <PercentYAxis />
                     <PercentTooltip />
                     <Bar dataKey="rate" fill="#2563eb" radius={[12, 12, 0, 0]}>
-                      <LabelList dataKey="rate" position="top" formatter={(value: number) => formatPercent(locale, value)} />
+                      <LabelList
+                        dataKey="rate"
+                        position="top"
+                        formatter={(value: number) => formatPercent(locale, value)}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -707,7 +733,11 @@ export default function ReportsDashboard({
                     <PercentYAxis />
                     <PercentTooltip />
                     <Bar dataKey="margin" fill="#22c55e" radius={[12, 12, 0, 0]}>
-                      <LabelList dataKey="margin" position="top" formatter={(value: number) => formatPercent(locale, value)} />
+                      <LabelList
+                        dataKey="margin"
+                        position="top"
+                        formatter={(value: number) => formatPercent(locale, value)}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -736,7 +766,10 @@ export default function ReportsDashboard({
                         if (name === 'price') {
                           return [formatCurrency(intlLocale, value), tTables('price')];
                         }
-                        return [formatCurrency(intlLocale, (payload?.payload as PriceMarginPoint).profit), tTables('profit')];
+                        return [
+                          formatCurrency(intlLocale, (payload?.payload as PriceMarginPoint).profit),
+                          tTables('profit'),
+                        ];
                       }}
                       labelFormatter={(_, payload) => {
                         if (!payload || payload.length === 0) return '';

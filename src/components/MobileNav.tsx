@@ -52,7 +52,7 @@ interface MobileNavProps {
 }
 
 // ---------- Icon registry (client-side mapping) ----------
-const ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
+const ICONS: Record<string, React.ComponentType<SVGProps<SVGSVGElement>>> = {
   dashboard: LayoutDashboard,
   items: Boxes,
   categories: FolderTree,
