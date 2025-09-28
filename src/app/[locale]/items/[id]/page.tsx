@@ -8,6 +8,7 @@ import { routing, type AppLocale } from '../../../../../i18n/routing';
 import { profit, totalCost } from '../../../../../lib/calc';
 import { formatDate } from '../../../../../lib/date';
 import { getItemDetail } from '../../../../../lib/items';
+import DeleteItemButton from '../../../../components/items/DeleteItemButton';
 import ItemDetailForm from '../../../../components/items/ItemDetailForm';
 import ItemImageCarousel from '../../../../components/items/ItemImageCarousel';
 import StatusBadge from '../../../../components/StatusBadge';
@@ -64,12 +65,15 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        href={`/${typedLocale}/items`}
-        className="inline-flex items-center gap-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
-      >
-        {t('back')}
-      </Link>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          href={`/${typedLocale}/items`}
+          className="inline-flex items-center gap-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
+        >
+          {t('back')}
+        </Link>
+        <DeleteItemButton itemId={item.id} redirectTo={`/${typedLocale}/items`} />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-6">

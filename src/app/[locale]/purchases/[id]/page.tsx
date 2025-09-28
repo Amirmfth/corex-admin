@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { routing, type AppLocale } from '../../../../../i18n/routing';
 import { getPurchaseDetail } from '../../../../../lib/purchases';
 import PageHeader from '../../../../components/PageHeader';
+import DeletePurchaseButton from '../../../../components/purchases/DeletePurchaseButton';
 import PurchaseReceivePanel from '../../../../components/purchases/PurchaseReceivePanel';
 
 export const dynamic = 'force-dynamic';
@@ -47,12 +48,15 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
         title={t('detailTitle')}
         description={received ? t('detailReceivedSubtitle') : t('detailPendingSubtitle')}
         actions={
-          <Link
-            href={`/${typedLocale}/items`}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)]"
-          >
-            {t('itemsLink')}
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={`/${typedLocale}/items`}
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)]"
+            >
+              {t('itemsLink')}
+            </Link>
+            <DeletePurchaseButton purchaseId={purchase.id} locale={typedLocale} />
+          </div>
         }
       />
 

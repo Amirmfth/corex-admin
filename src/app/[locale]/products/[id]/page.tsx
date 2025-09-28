@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { routing, type AppLocale } from "../../../../../i18n/routing";
 import { getProductDetail } from "../../../../../lib/products";
 import PageHeader from "../../../../components/PageHeader";
+import DeleteProductButton from "../../../../components/product/DeleteProductButton";
 import ProductDetailTabs from "../../../../components/product/ProductDetailTabs";
 
 type ProductDetailPageProps = {
@@ -37,6 +38,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       <PageHeader
         title={detail.product.name}
         description={metaParts || t("detailSubtitle")}
+        actions={<DeleteProductButton productId={detail.product.id} locale={typedLocale} />}
       />
 
       <ProductDetailTabs

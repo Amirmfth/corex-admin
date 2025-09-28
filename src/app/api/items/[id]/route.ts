@@ -1,6 +1,7 @@
 ﻿import { ItemStatus, MovementType, Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { deleteItemCascade } from '../../../../../lib/items';
 import { prisma } from '../../../../../lib/prisma';
 import { updateItemSchema } from '../../../../../lib/validation';
 
@@ -57,7 +58,6 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   }
 
   const parsed = updateItemSchema.safeParse(payload);
-  console.log(parsed.error)
 
   if (!parsed.success) {
     const message = parsed.error.errors.map((err) => err.message).join(', ');
@@ -138,6 +138,26 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     });
 
     return NextResponse.json(updatedItem);
+  } catch (error) {
+    return handlePrismaError(error);
+  }
+}
+
+export async function DELETE(_: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+
+  if (!id) {
+    return badRequest('Item id is required');
+  }
+
+  try {
+    const deleted = await prisma.$transaction((tx) => deleteItemCascade(tx, id));
+
+    if (!deleted) {
+      return notFound();
+    }
+
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     return handlePrismaError(error);
   }

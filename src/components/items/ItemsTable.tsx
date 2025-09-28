@@ -14,6 +14,8 @@ import type { ItemsListItem } from '../../../lib/items';
 import StatusBadge from '../StatusBadge';
 import Toman from '../Toman';
 
+import DeleteItemButton from './DeleteItemButton';
+
 type ItemsTableProps = {
   items: ItemsListItem[];
   locale: AppLocale;
@@ -275,6 +277,11 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
                           {tButtons('markSold')}
                         </button>
                       ) : null}
+                      <DeleteItemButton
+                        itemId={item.id}
+                        variant="ghost"
+                        disabled={pending}
+                      />
                     </div>
                   </td>
                 </tr>

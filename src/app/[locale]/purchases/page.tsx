@@ -8,6 +8,7 @@ import { routing, type AppLocale } from '../../../../i18n/routing';
 import { formatDate } from '../../../../lib/date';
 import { getPurchasesList } from '../../../../lib/purchases';
 import PageHeader from '../../../components/PageHeader';
+import DeletePurchaseButton from '../../../components/purchases/DeletePurchaseButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,7 @@ export default async function PurchasesPage({ params }: PurchasesPageProps) {
                           <span>{t('viewDetails')}</span>
                           <ArrowRight className="size-3.5" aria-hidden />
                         </Link>
+                        <DeletePurchaseButton purchaseId={purchase.id} locale={typedLocale} />
                       </div>
                     </td>
                   </tr>

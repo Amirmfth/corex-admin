@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 import type { AppLocale } from '../../../i18n/routing';
 import type { ProductListItem } from '../../../lib/products';
 
+import DeleteProductButton from './DeleteProductButton';
+
 type ProductsTableProps = {
   products: ProductListItem[];
   locale: AppLocale;
@@ -28,7 +30,7 @@ export default function ProductsTable({ products, locale }: ProductsTableProps) 
             <th className="px-4 py-3 font-medium">{tProducts('category')}</th>
             <th className="px-4 py-3 font-medium">{tProducts('items')}</th>
             <th className="px-4 py-3 font-medium">{tProducts('createdAt')}</th>
-            {/* <th className="px-4 py-3 text-right font-medium">{tTable("actions")}</th> */}
+            <th className="px-4 py-3 text-right font-medium">{tTable('actions')}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--border)]">
@@ -71,14 +73,21 @@ export default function ProductsTable({ products, locale }: ProductsTableProps) 
                 <td className="px-4 py-3 text-[var(--foreground)]">
                   {dateFormatter.format(new Date(product.createdAt))}
                 </td>
-                {/* <td className="px-4 py-3 text-right">
-                  <Link
-                    href={`/${locale}/products/${product.id}`}
-                    className="inline-flex items-center gap-2 text-xs font-medium text-[var(--accent)] transition hover:text-[var(--accent-hover)]"
-                  >
-                    {tProducts("view")}
-                  </Link>
-                </td> */}
+                <td className="px-4 py-3 text-right">
+                  <div className="flex items-center justify-end gap-3">
+                    <Link
+                      href={`/${locale}/products/${product.id}`}
+                      className="inline-flex items-center gap-2 text-xs font-medium text-[var(--accent)] transition hover:text-[var(--accent-hover)]"
+                    >
+                      {tProducts('view')}
+                    </Link>
+                    <DeleteProductButton
+                      productId={product.id}
+                      locale={locale}
+                      variant="ghost"
+                    />
+                  </div>
+                </td>
               </tr>
             );
           })}
