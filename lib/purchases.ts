@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import {
   ItemCondition,
   ItemStatus,
@@ -26,6 +24,16 @@ type PurchaseWithLines = Purchase & {
 
 function calculatePurchaseTotal(lines: CreatePurchaseInput['lines']): number {
   return lines.reduce((sum, line) => sum + line.quantity * line.unitToman + line.feesToman, 0);
+}
+
+function baseSerialUTC(d = new Date()) {
+  const yy = String(d.getUTCFullYear()).slice(-2);
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mi = String(d.getUTCMinutes()).padStart(2, '0');
+  const ss = String(d.getUTCSeconds()).padStart(2, '0');
+  return `CX-${yy}${mm}${dd}-${hh}${mi}${ss}`;
 }
 
 export async function createPurchase(payload: unknown): Promise<PurchaseWithLines> {
@@ -192,18 +200,13 @@ export async function receivePurchase(purchaseId: string): Promise<{
           lines: {
             include: {
               product: {
-                select: {
-                  id: true,
-                  name: true,
-                  brand: true,
-                  model: true,
-                },
+                select: { id: true, name: true, brand: true, model: true },
               },
             },
             orderBy: { id: 'asc' },
           },
         },
-        // lock: { mode: 'ForUpdate' },
+        // lock: { mode: 'ForUpdate' }, // re-enable if your client supports it
       });
 
       if (!purchase) {
@@ -216,25 +219,57 @@ export async function receivePurchase(purchaseId: string): Promise<{
       }
 
       const createdItemIds: string[] = [];
+      // Track per-base sequence so multiple items in the same second get unique suffixes (-01, -02, ...)
+      const serialSeq = new Map<string, number>();
 
       for (const line of purchase.lines) {
         const idsForLine: string[] = [];
 
         for (let index = 0; index < line.quantity; index += 1) {
-          const serial = `${purchase.id.slice(0, 4)}-${line.id.slice(0, 4)}-${index + 1}-${randomUUID().slice(0, 4)}`;
           const feesToman = computeFeeShare(line.feesToman, line.quantity, index);
 
-          const item = await tx.item.create({
-            data: {
-              productId: line.productId,
-              serial,
-              condition: ItemCondition.NEW,
-              status: ItemStatus.IN_STOCK,
-              purchaseToman: line.unitToman,
-              feesToman,
-              refurbToman: 0,
-            },
-          });
+          // Build a serial base for "now". Using UTC keeps ordering consistent across servers.
+          const base = baseSerialUTC();
+
+          // Start sequence from what we've already used for this base (in this tx)
+          let seq = serialSeq.get(base) ?? 0;
+
+          // Try creating with base, then with -01, -02, ... on unique collisions
+          // (also covers collisions from concurrent requests creating the same second)
+          let item: { id: string } | null = null;
+
+          for (let attempt = 0; attempt < 8; attempt++) {
+            const serial = seq === 0 ? base : `${base}-${String(seq).padStart(2, '0')}`;
+            try {
+              item = await tx.item.create({
+                data: {
+                  productId: line.productId,
+                  serial,
+                  condition: ItemCondition.NEW,
+                  status: ItemStatus.IN_STOCK,
+                  purchaseToman: line.unitToman,
+                  feesToman,
+                  refurbToman: 0,
+                },
+                select: { id: true },
+              });
+
+              // success -> bump the counter for this base and break
+              serialSeq.set(base, seq + 1);
+              break;
+            } catch (e: any) {
+              if (e?.code === 'P2002') {
+                // Unique constraint on serial -> try next suffix
+                seq += 1;
+                continue;
+              }
+              throw e; // anything else, bubble up
+            }
+          }
+
+          if (!item) {
+            throw new Error('Failed to allocate unique serial after retries');
+          }
 
           await tx.inventoryMovement.create({
             data: {
@@ -261,12 +296,7 @@ export async function receivePurchase(purchaseId: string): Promise<{
           lines: {
             include: {
               product: {
-                select: {
-                  id: true,
-                  name: true,
-                  brand: true,
-                  model: true,
-                },
+                select: { id: true, name: true, brand: true, model: true },
               },
             },
             orderBy: { id: 'asc' },

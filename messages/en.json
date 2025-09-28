@@ -338,7 +338,7 @@
     "title": "Quick add item",
     "subtitle": "Capture essential inventory details in seconds.",
     "productId": "Product ID",
-    "serial": "Serial",
+    "serial": "Serial(optional)",
     "condition": "Condition",
     "status": "Status",
     "purchaseToman": "Purchase (Toman)",

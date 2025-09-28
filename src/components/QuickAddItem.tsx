@@ -22,7 +22,6 @@ const STATUS_OPTIONS: ItemStatus[] = ['IN_STOCK', 'LISTED', 'REPAIR', 'RESERVED'
 const CONDITION_OPTIONS: ItemCondition[] = ['NEW', 'USED', 'FOR_PARTS'];
 type FormState = {
   productId: string;
-  serial: string;
   purchaseToman: string;
   feesToman: string;
   condition: ItemCondition;
@@ -30,13 +29,12 @@ type FormState = {
 };
 const INITIAL_FORM: FormState = {
   productId: '',
-  serial: '',
   purchaseToman: '',
   feesToman: '',
   condition: 'NEW',
   status: 'IN_STOCK',
 };
-const TEXT_FIELD_KEYS = ['serial', 'purchaseToman', 'feesToman'] as const;
+const TEXT_FIELD_KEYS = ['purchaseToman', 'feesToman'] as const;
 type TextFieldKey = (typeof TEXT_FIELD_KEYS)[number];
 function isTextFieldKey(value: string): value is TextFieldKey {
   return TEXT_FIELD_KEYS.includes(value as TextFieldKey);
@@ -87,7 +85,6 @@ export default function QuickAddItem() {
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const menuCloseTimeoutRef = useRef<number | null>(null);
   function updateForm<K extends keyof FormState>(key: K, value: FormState[K]) {
-
     setForm((prev) => ({ ...prev, [key]: value }));
   }
   function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
@@ -261,12 +258,12 @@ export default function QuickAddItem() {
       window.clearTimeout(timer);
     };
   }, [open, isProductMenuOpen, productQuery]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
     const payload = {
       productId: form.productId.trim(),
-      serial: form.serial.trim(),
       condition: form.condition,
       status: form.status,
       purchaseToman: Number.parseInt(form.purchaseToman, 10),
@@ -320,6 +317,7 @@ export default function QuickAddItem() {
           >
             {t('productId')}
           </label>
+          {/* Add product */}
           <Drawer.Root open={isProductSheetOpen} onOpenChange={setIsProductSheetOpen}>
             <Drawer.Trigger asChild>
               <button
@@ -338,9 +336,7 @@ export default function QuickAddItem() {
                     <h2 className="text-lg font-semibold text-[var(--foreground)]">
                       {tCreateProduct('title')}
                     </h2>
-                    <p className="text-sm text-[var(--muted)]">
-                      {tCreateProduct('subtitle')}
-                    </p>
+                    <p className="text-sm text-[var(--muted)]">{tCreateProduct('subtitle')}</p>
                   </div>
                   <form onSubmit={handleCreateProduct} className="space-y-4">
                     {newProductError ? (
@@ -350,7 +346,10 @@ export default function QuickAddItem() {
                     ) : null}
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="flex flex-col gap-2 sm:col-span-2">
-                        <label htmlFor="new-product-name" className="text-sm font-medium text-[var(--foreground)]">
+                        <label
+                          htmlFor="new-product-name"
+                          className="text-sm font-medium text-[var(--foreground)]"
+                        >
                           {tProductForm('nameLabel')}
                         </label>
                         <input
@@ -363,7 +362,10 @@ export default function QuickAddItem() {
                         />
                       </div>
                       <div className="flex flex-col gap-2">
-                        <label htmlFor="new-product-brand" className="text-sm font-medium text-[var(--foreground)]">
+                        <label
+                          htmlFor="new-product-brand"
+                          className="text-sm font-medium text-[var(--foreground)]"
+                        >
                           {tProductForm('brandLabel')}
                         </label>
                         <input
@@ -375,7 +377,10 @@ export default function QuickAddItem() {
                         />
                       </div>
                       <div className="flex flex-col gap-2">
-                        <label htmlFor="new-product-model" className="text-sm font-medium text-[var(--foreground)]">
+                        <label
+                          htmlFor="new-product-model"
+                          className="text-sm font-medium text-[var(--foreground)]"
+                        >
                           {tProductForm('modelLabel')}
                         </label>
                         <input
@@ -417,7 +422,9 @@ export default function QuickAddItem() {
                           <Loader2 className="size-4 animate-spin" aria-hidden />
                         ) : null}
                         <span>
-                          {isCreatingProduct ? tProductForm('submitting') : tProductForm('submitCreate')}
+                          {isCreatingProduct
+                            ? tProductForm('submitting')
+                            : tProductForm('submitCreate')}
                         </span>
                       </button>
                     </div>
@@ -535,7 +542,7 @@ export default function QuickAddItem() {
           </div>
         ) : null}
       </div>
-      <div>
+      {/* <div>
         <label
           className="mb-1 block text-sm font-medium text-[var(--muted-strong)]"
           htmlFor="serial"
@@ -545,13 +552,12 @@ export default function QuickAddItem() {
         <input
           id="serial"
           name="serial"
-          required
           value={form.serial}
           onChange={handleFieldChange}
           className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm shadow-sm focus:border-[var(--accent)] focus:outline-none"
           placeholder="SN-0001"
         />
-      </div>
+      </div> */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label

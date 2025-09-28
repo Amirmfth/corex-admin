@@ -29,7 +29,7 @@ const imagesArray = z.array(z.string().url({ message: 'images must contain valid
 export const createItemSchema = z
   .object({
     productId: requiredString('productId'),
-    serial: requiredString('serial'),
+    serial: optionalString('serial'),
     condition: z.nativeEnum(ItemCondition).default(ItemCondition.USED),
     status: z.nativeEnum(ItemStatus).default(ItemStatus.IN_STOCK),
     acquiredAt: optionalDateInput,

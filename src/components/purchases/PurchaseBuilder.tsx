@@ -11,8 +11,8 @@ import type { AppLocale } from '../../../i18n/routing';
 
 const DEFAULT_LINE = {
   quantity: '1',
-  unitToman: '',
-  feesToman: '',
+  unitToman: '0',
+  feesToman: '0',
 };
 
 type ProductOption = {
@@ -232,8 +232,8 @@ export default function PurchaseBuilder({ locale, products }: PurchaseBuilderPro
   const [reference, setReference] = useState('');
   const [lines, setLines] = useState<LineState[]>(() => [createLine()]);
 
-  // keep the same gate as before, but now it's about being able to create at least one line
-  const canSubmit = true; // previously depended on products.length; the source is now remote search
+  
+  const canSubmit = true; 
 
   const totalToman = useMemo(() => {
     return lines.reduce((sum, line) => {
