@@ -113,7 +113,7 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
                         <div className="flex flex-col">
                           <span className="font-medium">{line.product.name}</span>
                           <span className="text-xs text-[var(--muted)]">
-                            {[line.product.brand, line.product.model].filter(Boolean).join(' Â· ')}
+                            {[line.product.brand, line.product.model].filter(Boolean).join(' . ')}
                           </span>
                         </div>
                       </td>

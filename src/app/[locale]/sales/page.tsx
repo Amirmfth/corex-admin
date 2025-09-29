@@ -48,7 +48,7 @@ export default async function SalesPage({ params }: SalesPageProps) {
       />
 
       {hasSales ? (
-        <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+        <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
           <table className="min-w-full divide-y divide-[var(--border)] text-sm text-center">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
               <tr>

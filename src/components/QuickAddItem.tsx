@@ -330,8 +330,8 @@ export default function QuickAddItem() {
             <Drawer.Portal>
               <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
               <Drawer.Content className="fixed inset-x-0 bottom-0 z-[60] max-h-[95vh] overflow-y-auto rounded-t-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg sm:inset-auto sm:left-1/2 sm:top-1/2 sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl">
-                <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300 sm:hidden" />
-                <div className="space-y-6">
+                <div className="mx-auto h-1.5 w-12 rounded-full bg-neutral-300 sm:hidden" />
+                <div className="space-y-6 mb-16">
                   <div className="space-y-1">
                     <h2 className="text-lg font-semibold text-[var(--foreground)]">
                       {tCreateProduct('title')}

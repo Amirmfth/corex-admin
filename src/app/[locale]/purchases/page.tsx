@@ -50,7 +50,7 @@ export default async function PurchasesPage({ params }: PurchasesPageProps) {
       />
 
       {hasPurchases ? (
-        <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+        <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
           <table className="min-w-full divide-y divide-[var(--border)] text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
               <tr>

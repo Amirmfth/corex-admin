@@ -1,18 +1,20 @@
 ﻿'use client';
 
 import { ItemStatus } from '@prisma/client';
-import { ImageOff } from 'lucide-react';
+import { ImageOff, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import type { AppLocale } from '../../../i18n/routing';
 import { totalCost } from '../../../lib/calc';
 import type { ItemsListItem } from '../../../lib/items';
 import StatusBadge from '../StatusBadge';
 import Toman from '../Toman';
+
 
 import DeleteItemButton from './DeleteItemButton';
 
@@ -49,11 +51,8 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
   }
 
   function toggleAll() {
-    if (allSelected) {
-      setSelected([]);
-    } else {
-      setSelected(items.map((item) => item.id));
-    }
+    if (allSelected) setSelected([]);
+    else setSelected(items.map((item) => item.id));
   }
 
   async function patchItem(id: string, body: Record<string, unknown>) {
@@ -62,7 +61,6 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       const message = typeof data?.message === 'string' ? data.message : 'Request failed';
@@ -71,10 +69,7 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
   }
 
   function handleBulkStatus(status: ItemStatus) {
-    if (selected.length === 0) {
-      return;
-    }
-
+    if (selected.length === 0) return;
     startTransition(async () => {
       try {
         await Promise.all(selected.map((id) => patchItem(id, { status })));
@@ -108,21 +103,15 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
 
   function handleMarkSold(item: ItemsListItem) {
     const salePrice = window.prompt('Sold price (Toman)', item.listedPriceToman?.toString() ?? '');
-    if (!salePrice) {
-      return;
-    }
+    if (!salePrice) return;
     const parsed = Number.parseInt(salePrice, 10);
     if (Number.isNaN(parsed) || parsed <= 0) {
       toast.error('Invalid sale price');
       return;
     }
-
     startTransition(async () => {
       try {
-        await patchItem(item.id, {
-          status: ItemStatus.SOLD,
-          soldPriceToman: parsed,
-        });
+        await patchItem(item.id, { status: ItemStatus.SOLD, soldPriceToman: parsed });
         toast.success(tButtons('markSold'));
         router.refresh();
       } catch (error) {
@@ -159,7 +148,9 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
   return (
     <div className="space-y-3">
       {bulkControls}
-      <div className="overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+
+      {/* Desktop table (unchanged), hidden on small screens */}
+      <div className="hidden md:block overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
         <table className="min-w-full divide-y divide-[var(--border)] text-sm">
           <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
             <tr>
@@ -253,12 +244,6 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
                   <td className="px-4 py-3 text-[var(--muted-strong)]">{item.location ?? '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      {/* <Link
-                        href={`/${locale}/items/${item.id}`}
-                        className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--muted-strong)] transition hover:border-[var(--accent)] hover:text-[var(--foreground)]"
-                      >
-                        {tButtons('edit')}
-                      </Link> */}
                       <button
                         type="button"
                         onClick={() => handleListToggle(item)}
@@ -290,6 +275,230 @@ export default function ItemsTable({ items, locale }: ItemsTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile card list */}
+      <ul className="md:hidden space-y-3">
+        <AnimatePresence initial={false}>
+          {items.map((item) => {
+            const isChecked = selectedSet.has(item.id);
+            const primaryImage = item.imageUrls[0] || item.product.imageUrls[0] || null;
+            const costValue = totalCost({
+              purchaseToman: item.purchaseToman,
+              feesToman: item.feesToman,
+              refurbToman: item.refurbToman,
+            });
+            const meta = [item.product.brand, item.product.model].filter(Boolean).join(' · ');
+
+            return (
+              <motion.li
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm p-3"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-hover)] size-16">
+                    {primaryImage ? (
+                      <img
+                        src={primaryImage}
+                        alt={item.product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <ImageOff className="size-5 text-[var(--muted)]" aria-hidden />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/${locale}/items/${item.id}`}
+                          className="block truncate font-medium text-[var(--foreground)]"
+                        >
+                          {item.product.name}
+                        </Link>
+                        {meta ? (
+                          <p className="truncate text-xs text-[var(--muted)]">{meta}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <label className="inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            className="size-4 rounded border-[var(--border)]"
+                            checked={isChecked}
+                            onChange={() => toggleSelection(item.id)}
+                          />
+                        </label>
+                        <KebabMenu
+                          items={[
+                            {
+                              label:
+                                item.status === ItemStatus.LISTED
+                                  ? tButtons('unlist')
+                                  : tButtons('list'),
+                              onClick: () => handleListToggle(item),
+                            },
+                            ...(item.status !== ItemStatus.SOLD
+                              ? [
+                                  {
+                                    label: tButtons('markSold'),
+                                    onClick: () => handleMarkSold(item),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                          locale={locale}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Chips */}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                      {item.serial ? (
+                        <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+                          {tTable('serial')}:{' '}
+                          <span className="text-[var(--muted-strong)]">{item.serial}</span>
+                        </span>
+                      ) : null}
+                      <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+                        {tTable('condition')}:{' '}
+                        <span className="text-[var(--muted-strong)]">
+                          {tConditions(item.condition)}
+                        </span>
+                      </span>
+                      <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+                        {tTable('age')}:{' '}
+                        <span className="text-[var(--muted-strong)]">
+                          {formatRelativeDays(locale, new Date(item.acquiredAt))}
+                        </span>
+                      </span>
+                      <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+                        {tTable('location')}:{' '}
+                        <span className="text-[var(--muted-strong)]">{item.location ?? '—'}</span>
+                      </span>
+                    </div>
+
+                    {/* Prices + status */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-[var(--muted)]">{tTable('cost')}</span>
+                        <span className="text-sm font-semibold text-[var(--foreground)]">
+                          <Toman value={costValue} locale={locale === 'fa' ? 'fa-IR' : 'en-US'} />
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-[var(--muted)]">{tTable('price')}</span>
+                        <span className="text-sm font-semibold text-[var(--foreground)]">
+                          {item.listedPriceToman ? (
+                            <Toman
+                              value={item.listedPriceToman}
+                              locale={locale === 'fa' ? 'fa-IR' : 'en-US'}
+                            />
+                          ) : (
+                            <span className="text-[var(--muted)]">—</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-2">
+                      <StatusBadge status={item.status} />
+                    </div>
+                  </div>
+                </div>
+              </motion.li>
+            );
+          })}
+        </AnimatePresence>
+      </ul>
+    </div>
+  );
+}
+
+/* ------------------------------------------------
+   Headless 3-dots menu with Framer Motion
+------------------------------------------------- */
+function KebabMenu({
+  items,
+  locale,
+}: {
+  items: { label: string; onClick: () => void }[];
+  locale: AppLocale;
+}) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+
+  // Close on outside click / escape
+  useEffect(() => {
+    function onDoc(e: MouseEvent | TouchEvent) {
+      if (!open) return;
+      const t = e.target as Node;
+      if (btnRef.current && btnRef.current.contains(t)) return;
+      setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('touchstart', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('touchstart', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1.5 hover:bg-[var(--surface-muted)]"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <MoreVertical className="size-5 text-[var(--muted)]" />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="menu"
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
+            className={`absolute ${locale === 'fa' ? 'left-0' : 'right-0'} z-20 mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl`}
+          >
+            <ul className="p-1">
+              {items.map((it, i) => (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      it.onClick();
+                    }}
+                    className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
+                  >
+                    {it.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

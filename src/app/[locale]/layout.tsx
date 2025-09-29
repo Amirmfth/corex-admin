@@ -50,7 +50,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     getDisplaySettings(),
   ]);
 
-  const dir: 'ltr' | 'rtl' = displaySettings.rtl ? 'rtl' : 'ltr';
+  const dir: 'ltr' | 'rtl' = locale === 'fa' ? 'rtl' : 'ltr';
   const brandLabel = generalSettings.businessName || 'CoreX';
 
   // Build client-safe nav items (iconId as string)

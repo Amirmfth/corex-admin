@@ -21,7 +21,7 @@ export default function ProductsTable({ products, locale }: ProductsTableProps) 
   const dateFormatter = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' });
 
   return (
-    <div className="overflow-hidden overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+    <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
       <table className="min-w-full divide-y divide-[var(--border)] text-sm text-right">
         <thead className="bg-[var(--surface-muted)] text-[var(--muted)]">
           <tr>
